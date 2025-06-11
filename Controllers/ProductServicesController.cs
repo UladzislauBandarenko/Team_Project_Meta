@@ -7,10 +7,10 @@ namespace Team_Project_Meta.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductsController : ControllerBase
+    public class ProductsServiceController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public ProductsController(AppDbContext context) => _context = context;
+        public ProductsServiceController(AppDbContext context) => _context = context;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts() =>
