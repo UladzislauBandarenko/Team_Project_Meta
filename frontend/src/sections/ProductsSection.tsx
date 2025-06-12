@@ -1,6 +1,6 @@
 import { Box, Typography, Button } from "@mui/material"
 import Grid2 from "@mui/material/Unstable_Grid2"
-import ProductCard from "../ common/ProductCard"
+import ProductCard from "../common/ProductCard"
 import products from "../data/products"
 import { useNavigate } from "react-router-dom"
 

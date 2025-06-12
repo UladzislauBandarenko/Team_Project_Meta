@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material"
 import Grid2 from "@mui/material/Unstable_Grid2"
 import { useNavigate } from "react-router-dom"
 
-import CategoryCard from "../ common/CategoryCard"
+import CategoryCard from "../common/CategoryCard"
 import categories from "../data/categories"
 
 const CategoriesSection = () => {

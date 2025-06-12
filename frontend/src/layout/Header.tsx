@@ -1,9 +1,20 @@
 
-import { AppBar, Toolbar, Typography, Box, IconButton, Button } from "@mui/material"
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Box,
+  IconButton,
+  Button,
+} from "@mui/material"
 import { ShoppingCart, AccountCircle } from "@mui/icons-material"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 const Header = () => {
+  const location = useLocation()
+
+  const isActive = (path: string) => location.pathname === path
+
   return (
     <AppBar position="sticky" sx={{ bgcolor: "#8C471F", px: 2 }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -17,10 +28,37 @@ const Header = () => {
           PetCare Market
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Button color="inherit" component={Link} to="/shop">
+          <Button
+            color="inherit"
+            component={Link}
+            to="/"
+            sx={{
+              fontWeight: isActive("/") ? "bold" : "normal",
+              borderBottom: isActive("/") ? "2px solid white" : "none",
+            }}
+          >
+            Home
+          </Button>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/shop"
+            sx={{
+              fontWeight: isActive("/shop") ? "bold" : "normal",
+              borderBottom: isActive("/shop") ? "2px solid white" : "none",
+            }}
+          >
             Shop
           </Button>
-          <Button color="inherit" component={Link} to="/help">
+          <Button
+            color="inherit"
+            component={Link}
+            to="/help"
+            sx={{
+              fontWeight: isActive("/help") ? "bold" : "normal",
+              borderBottom: isActive("/help") ? "2px solid white" : "none",
+            }}
+          >
             Help Shelters
           </Button>
           <IconButton color="inherit">

@@ -15,7 +15,7 @@ import {
 import Grid2 from "@mui/material/Unstable_Grid2"
 import { useSearchParams } from "react-router-dom"
 
-import ProductCard from "../ common/ProductCard"
+import ProductCard from "../common/ProductCard"
 import products from "../data/products"
 import type { Product } from "../types/product"
 

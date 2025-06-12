@@ -35,7 +35,7 @@ const HeroSection = () => {
               color="#5A2600"
               sx={{ mb: 4, fontSize: { xs: "1rem", md: "1.125rem" }, maxWidth: 500 }}
             >
-              Find the best products for your furry friends while supporting animal shelters with every purchase.
+              Find the best products for your furry friends while supporting animal shelters with every purchase
             </Typography>
 
             <Box
@@ -79,8 +79,8 @@ const HeroSection = () => {
                 "&:hover": { bgcolor: "#6B2802" },
                 textTransform: "none",
                 fontWeight: "bold",
-                px: 3,
-                py: 1,
+                px: 4,
+                py: 1.5,
               }}
             >
               Find Products
