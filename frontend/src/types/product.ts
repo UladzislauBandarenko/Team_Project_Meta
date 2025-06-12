@@ -4,6 +4,6 @@ export interface Product {
   price: string
   rating: number
   reviews: number
-  image: string
+  image?: string
   badge?: string
 }

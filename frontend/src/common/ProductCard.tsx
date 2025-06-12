@@ -21,7 +21,7 @@ const ProductCard = ({ product }: Props) => {
     >
       <Box
         component="img"
-        src={product.image}
+        src={product.image || "/assets/dog_food.jpg"}
         alt={product.name}
         sx={{
           width: "100%",
