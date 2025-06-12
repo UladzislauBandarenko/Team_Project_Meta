@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Team_Project_Meta.Data;
-using Team_Project_Meta.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Team_Project_Meta.DTOs.Users;
+using Team_Project_Meta.Services.Users;
 
 namespace Team_Project_Meta.Controllers
 {
@@ -9,51 +9,50 @@ namespace Team_Project_Meta.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public UsersController(AppDbContext context) => _context = context;
+        private readonly IUsersService _usersService;
 
+        public UsersController(IUsersService usersService)
+        {
+            _usersService = usersService;
+        }
+
+        // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers() =>
-            await _context.Users.ToListAsync();
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
+        {
+            var users = await _usersService.GetAllUsersAsync();
+            return Ok(users);
+        }
 
+        // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<UserDto>> GetUserById(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _usersService.GetUserByIdAsync(id);
             if (user == null) return NotFound();
-            return user;
+            return Ok(user);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<User>> AddUser(User user)
+        // POST: api/Users/register
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserDto>> Register([FromBody] UserRegisterDto dto)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            var created = await _usersService.RegisterUserAsync(dto);
+            if (created == null) return BadRequest("User could not be registered");
+            return CreatedAtAction(nameof(GetUserById), new { id = created.Id }, created);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User user)
+        // POST: api/Users/login
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<AuthResponseDto>> Login([FromBody] UserLoginDto dto)
         {
-            if (id != user.Id) return BadRequest();
-            _context.Entry(user).State = EntityState.Modified;
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Users.Any(u => u.Id == id)) return NotFound();
-                else throw;
-            }
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound();
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _usersService.LoginUserAsync(dto);
+            if (response == null) return Unauthorized("Invalid credentials");
+            return Ok(response);
         }
     }
 }
