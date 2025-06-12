@@ -1,4 +1,3 @@
-
 import {
   AppBar,
   Toolbar,
@@ -7,7 +6,7 @@ import {
   IconButton,
   Button,
 } from "@mui/material"
-import { ShoppingCart, AccountCircle } from "@mui/icons-material"
+import { ShoppingCart, AccountCircle, Favorite } from "@mui/icons-material"
 import { Link, useLocation } from "react-router-dom"
 
 const Header = () => {
@@ -61,6 +60,17 @@ const Header = () => {
           >
             Help Shelters
           </Button>
+
+          <IconButton
+            component={Link}
+            to="/favourites"
+            sx={{
+              color: isActive("/favourites") ? "#DD2F2F" : "white",
+            }}
+          >
+            <Favorite />
+          </IconButton>
+
           <IconButton color="inherit">
             <AccountCircle />
           </IconButton>

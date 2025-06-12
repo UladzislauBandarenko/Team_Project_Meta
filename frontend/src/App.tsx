@@ -4,6 +4,7 @@ import Footer from "./layout/Footer"
 import Home from "./pages/Home"
 import Shop from "./pages/Shop"
 import HelpSheltersPage from "./pages/HelpShelters" 
+import FavouritesPage from "./pages/Favourites"
 import Box from "@mui/material/Box"
 import ScrollToTop from "./components/ScrollToTop"
 
@@ -23,6 +24,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/help" element={<HelpSheltersPage />} /> 
+            <Route path="/favourites" element={<FavouritesPage />} />
           </Routes>
         </Box>
         <Footer />

@@ -8,8 +8,20 @@ import categories from "../data/categories"
 const CategoriesSection = () => {
   const navigate = useNavigate()
 
-  const handleClick = (type: string) => {
-    navigate(`/shop?type=${encodeURIComponent(type)}`)
+  const categoryToTypeMap: Record<string, string> = {
+    "Dog Products": "Dogs",
+    "Cat Products": "Cats",
+    "Fish Products": "Fish",
+    "Bird Products": "Birds",
+    "Small Pet Products": "Small Pets",
+    "Reptile Products": "Reptiles",
+  }
+
+  const handleClick = (name: string) => {
+    const type = categoryToTypeMap[name]
+    if (type) {
+      navigate(`/shop?type=${encodeURIComponent(type)}`)
+    }
   }
 
   return (

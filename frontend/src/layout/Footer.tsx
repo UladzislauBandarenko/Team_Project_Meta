@@ -1,23 +1,26 @@
 import { Box, Container, Typography, IconButton } from "@mui/material";
 import { Facebook, Twitter, Instagram, YouTube, LinkedIn } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
     <Box sx={{ bgcolor: "#D5B7A5", color: "#6B2802", py: 4, mt: 8 }}>
       <Container maxWidth={false} disableGutters sx={{ px: { xs: 4, md: 8 } }}>
-        <Box sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-          gap: { xs: 2, md: 6 },
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: { xs: 2, md: 6 },
+          }}
+        >
           <Box sx={{ minWidth: 200, flex: "1 1 250px" }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               PetCare Market
             </Typography>
             <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
-  Making pet care products shopping meaningful by supporting animal shelters with every purchase
-</Typography>
+              Making pet care products shopping meaningful by supporting animal shelters with every purchase
+            </Typography>
 
             <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
               <IconButton size="small" sx={{ color: "#6B2802" }}>
@@ -42,12 +45,30 @@ const Footer = () => {
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Shop
             </Typography>
-            <Typography variant="body2">Dog Products</Typography>
-            <Typography variant="body2">Cat Products</Typography>
-            <Typography variant="body2">Fish Products</Typography>
-            <Typography variant="body2">Bird Products</Typography>
-            <Typography variant="body2">Small Pets</Typography>
-            <Typography variant="body2">Reptile Products</Typography>
+            {[
+              { label: "Dog Products", type: "Dogs" },
+              { label: "Cat Products", type: "Cats" },
+              { label: "Fish Products", type: "Fish" },
+              { label: "Bird Products", type: "Birds" },
+              { label: "Small Pets", type: "Small Pets" },
+              { label: "Reptile Products", type: "Reptiles" },
+            ].map(({ label, type }) => (
+              <Typography
+                key={type}
+                variant="body2"
+                component={Link}
+                to={`/shop?type=${encodeURIComponent(type)}`}
+                sx={{
+                  color: "inherit",
+                  textDecoration: "none",
+                  display: "block",
+                  my: 0.5,
+                  "&:hover": { textDecoration: "underline" },
+                }}
+              >
+                {label}
+              </Typography>
+            ))}
           </Box>
 
           <Box sx={{ minWidth: 150 }}>

@@ -21,7 +21,7 @@ const CategoryCard = ({ category, onClick }: CategoryCardProps) => {
           transform: "translateY(-5px) scale(1.03)",
           boxShadow: 4,
         },
-        maxWidth: 400, 
+        maxWidth: 400,
         mx: "auto",
       }}
     >
@@ -31,7 +31,7 @@ const CategoryCard = ({ category, onClick }: CategoryCardProps) => {
         alt={category.name}
         sx={{
           width: "100%",
-          height: 200, 
+          height: 200,
           objectFit: "cover",
         }}
       />
