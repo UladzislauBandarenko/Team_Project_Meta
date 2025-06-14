@@ -15,25 +15,33 @@ namespace Team_Project_Meta.Controllers
             _service = service;
         }
 
-        [HttpGet("order/{orderId}")]
-        public async Task<ActionResult<IEnumerable<OrderItemDto>>> GetByOrder(int orderId)
+        [HttpGet("{orderId}")]
+        public async Task<IActionResult> GetItemsByOrder(int orderId)
         {
             var items = await _service.GetItemsByOrderIdAsync(orderId);
             return Ok(items);
         }
 
         [HttpPost]
-        public async Task<ActionResult<OrderItemDto>> Add(CreateOrderItemDto dto)
+        public async Task<IActionResult> AddItem([FromBody] CreateOrderItemDto dto)
         {
-            var item = await _service.AddOrderItemAsync(dto);
-            return Ok(item);
+            var createdItem = await _service.AddOrderItemAsync(dto);
+            return CreatedAtAction(nameof(GetItemsByOrder), new { orderId = createdItem.OrderId }, createdItem);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateItem(int id, [FromBody] UpdateOrderItemDto dto)
+        {
+            var updated = await _service.UpdateOrderItemAsync(id, dto);
+            if (!updated) return NotFound();
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteItem(int id)
         {
-            var success = await _service.DeleteOrderItemAsync(id);
-            if (!success) return NotFound();
+            var deleted = await _service.DeleteOrderItemAsync(id);
+            if (!deleted) return NotFound();
             return NoContent();
         }
     }

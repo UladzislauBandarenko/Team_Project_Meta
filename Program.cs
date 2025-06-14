@@ -57,6 +57,8 @@ builder.Services.AddScoped<IProductsService, ProductsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICartItemService, CartItemService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>

@@ -8,27 +8,18 @@ namespace Team_Project_Meta.Services.OrderItem
     public class OrderItemService : IOrderItemService
     {
         private readonly AppDbContext _context;
-
-        public OrderItemService(AppDbContext context)
-        {
-            _context = context;
-        }
+        public OrderItemService(AppDbContext context) => _context = context;
 
         public async Task<IEnumerable<OrderItemDto>> GetItemsByOrderIdAsync(int orderId)
-        {
-            var items = await _context.OrderItems
-                .Where(oi => oi.OrderId == orderId)
-                .ToListAsync();
-
-            return items.Select(oi => new OrderItemDto
-            {
-                Id = oi.Id,
-                OrderId = oi.OrderId,
-                ProductId = oi.ProductId,
-                Quantity = oi.Quantity,
-                Price = oi.Price
-            });
-        }
+            => await _context.OrderItems.Where(i => i.OrderId == orderId)
+                .Select(i => new OrderItemDto
+                {
+                    Id = i.Id,
+                    OrderId = i.OrderId,
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    Price = i.Price
+                }).ToListAsync();
 
         public async Task<OrderItemDto> AddOrderItemAsync(CreateOrderItemDto dto)
         {
@@ -39,10 +30,8 @@ namespace Team_Project_Meta.Services.OrderItem
                 Quantity = dto.Quantity,
                 Price = dto.Price
             };
-
             _context.OrderItems.Add(item);
             await _context.SaveChangesAsync();
-
             return new OrderItemDto
             {
                 Id = item.Id,
@@ -51,6 +40,19 @@ namespace Team_Project_Meta.Services.OrderItem
                 Quantity = item.Quantity,
                 Price = item.Price
             };
+        }
+
+        public async Task<bool> UpdateOrderItemAsync(int id, UpdateOrderItemDto dto)
+        {
+            var item = await _context.OrderItems.FindAsync(id);
+            if (item == null) return false;
+
+            item.Quantity = dto.Quantity;
+            item.Price = dto.Price;
+
+            _context.OrderItems.Update(item);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteOrderItemAsync(int id)
