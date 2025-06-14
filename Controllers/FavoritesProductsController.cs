@@ -1,45 +1,72 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Team_Project_Meta.Data;
-using Team_Project_Meta.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Team_Project_Meta.DTOs.FavoritesProduct;
+using Team_Project_Meta.Services.FavoritesProducts;
 
-namespace Team_Project_Meta.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class FavoritesProductsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class FavoritesProductsController : ControllerBase
+    private readonly IFavoritesProductsService _service;
+
+    public FavoritesProductsController(IFavoritesProductsService service)
     {
-        private readonly AppDbContext _context;
-        public FavoritesProductsController(AppDbContext context) => _context = context;
+        _service = service;
+    }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<FavoritesProduct>>> GetFavorites() =>
-            await _context.FavoritesProducts.Include(fp => fp.User).Include(fp => fp.Product).ToListAsync();
+    // 1) Админ смотрит все фавориты всех пользователей
+    [HttpGet]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> GetAll()
+    {
+        var favorites = await _service.GetAllAsync();
+        return Ok(favorites);
+    }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<FavoritesProduct>> GetFavorite(int id)
-        {
-            var fav = await _context.FavoritesProducts.Include(fp => fp.User).Include(fp => fp.Product).FirstOrDefaultAsync(fp => fp.Id == id);
-            if (fav == null) return NotFound();
-            return fav;
-        }
+    // 4) Пользователь смотрит свои фавориты
+    [HttpGet("me")]
+    [Authorize(Roles = "buyer")]
+    public async Task<IActionResult> GetMyFavorites()
+    {
+        int userId = GetUserIdFromToken();
+        var favorites = await _service.GetByUserIdAsync(userId);
+        return Ok(favorites);
+    }
 
-        [HttpPost]
-        public async Task<ActionResult<FavoritesProduct>> AddFavorite(FavoritesProduct fav)
-        {
-            _context.FavoritesProducts.Add(fav);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetFavorite), new { id = fav.Id }, fav);
-        }
+    // 2) Пользователь добавляет продукт в свои фавориты
+    [HttpPost]
+    [Authorize(Roles = "buyer")]
+    public async Task<IActionResult> Add([FromBody] CreateFavoritesProductDto dto)
+    {
+        int userId = GetUserIdFromToken();
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFavorite(int id)
-        {
-            var fav = await _context.FavoritesProducts.FindAsync(id);
-            if (fav == null) return NotFound();
-            _context.FavoritesProducts.Remove(fav);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+        var added = await _service.AddAsync(userId, dto.ProductId);
+        if (added == null)
+            return Conflict("Product already in favorites.");
+
+        return CreatedAtAction(nameof(GetMyFavorites), null, added);
+    }
+
+    // 3) Пользователь удаляет свой продукт из фаворитов
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "buyer")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        int userId = GetUserIdFromToken();
+
+        var deleted = await _service.DeleteAsync(id, userId);
+        if (!deleted)
+            return Forbid("Not found or not your favorite.");
+
+        return NoContent();
+    }
+
+    private int GetUserIdFromToken()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            throw new UnauthorizedAccessException("Invalid user ID in token.");
+        return userId;
     }
 }
