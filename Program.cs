@@ -3,8 +3,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Team_Project_Meta.Data;
+using Team_Project_Meta.Services;
 using Team_Project_Meta.Services.Products;
 using Team_Project_Meta.Services.Users;
+using Team_Project_Meta.Services.Cart;
+using Team_Project_Meta.Services.CartItem;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +53,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<IProductsService, ProductsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICartItemService, CartItemService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
