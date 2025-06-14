@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Team_Project_Meta.Data;
 using Team_Project_Meta.Services.Products;
 using Team_Project_Meta.Services.Users;
+using Team_Project_Meta.Services.Order;
+using Team_Project_Meta.Services.OrderItem;
 
 var builder = WebApplication.CreateBuilder(args);
 

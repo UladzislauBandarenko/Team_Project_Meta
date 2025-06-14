@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Team_Project_Meta.Data;
-using Team_Project_Meta.Models;
+using Team_Project_Meta.DTOs.OrderItem;
+using Team_Project_Meta.Services.OrderItem;
 
 namespace Team_Project_Meta.Controllers
 {
@@ -9,50 +8,32 @@ namespace Team_Project_Meta.Controllers
     [Route("api/[controller]")]
     public class OrderItemsController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public OrderItemsController(AppDbContext context) => _context = context;
+        private readonly IOrderItemService _service;
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrderItem>>> GetOrderItems() =>
-            await _context.OrderItems.Include(oi => oi.Product).Include(oi => oi.Order).ToListAsync();
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<OrderItem>> GetOrderItem(int id)
+        public OrderItemsController(IOrderItemService service)
         {
-            var item = await _context.OrderItems.Include(oi => oi.Product).Include(oi => oi.Order).FirstOrDefaultAsync(oi => oi.Id == id);
-            if (item == null) return NotFound();
-            return item;
+            _service = service;
+        }
+
+        [HttpGet("order/{orderId}")]
+        public async Task<ActionResult<IEnumerable<OrderItemDto>>> GetByOrder(int orderId)
+        {
+            var items = await _service.GetItemsByOrderIdAsync(orderId);
+            return Ok(items);
         }
 
         [HttpPost]
-        public async Task<ActionResult<OrderItem>> AddOrderItem(OrderItem orderItem)
+        public async Task<ActionResult<OrderItemDto>> Add(CreateOrderItemDto dto)
         {
-            _context.OrderItems.Add(orderItem);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetOrderItem), new { id = orderItem.Id }, orderItem);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrderItem(int id, OrderItem orderItem)
-        {
-            if (id != orderItem.Id) return BadRequest();
-            _context.Entry(orderItem).State = EntityState.Modified;
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.OrderItems.Any(oi => oi.Id == id)) return NotFound();
-                else throw;
-            }
-            return NoContent();
+            var item = await _service.AddOrderItemAsync(dto);
+            return Ok(item);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrderItem(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var orderItem = await _context.OrderItems.FindAsync(id);
-            if (orderItem == null) return NotFound();
-            _context.OrderItems.Remove(orderItem);
-            await _context.SaveChangesAsync();
+            var success = await _service.DeleteOrderItemAsync(id);
+            if (!success) return NotFound();
             return NoContent();
         }
     }
