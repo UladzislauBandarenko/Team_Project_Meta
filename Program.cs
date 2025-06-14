@@ -10,6 +10,7 @@ using Team_Project_Meta.Services.Cart;
 using Team_Project_Meta.Services.CartItem;
 using Team_Project_Meta.Services.Order;
 using Team_Project_Meta.Services.OrderItem;
+using Team_Project_Meta.Services.FavoritesProducts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +60,8 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICartItemService, CartItemService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+builder.Services.AddScoped<IFavoritesProductsService, FavoritesProductsService>();
+
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Team_Project_Meta.Data;
-using Team_Project_Meta.Models;
+using Team_Project_Meta.DTOs.FavoritesProduct; 
+using Team_Project_Meta.Services.FavoritesProducts;
 
 namespace Team_Project_Meta.Controllers
 {
@@ -9,37 +8,48 @@ namespace Team_Project_Meta.Controllers
     [Route("api/[controller]")]
     public class FavoritesProductsController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public FavoritesProductsController(AppDbContext context) => _context = context;
+        private readonly IFavoritesProductsService _service;
+
+        public FavoritesProductsController(IFavoritesProductsService service)
+        {
+            _service = service;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FavoritesProduct>>> GetFavorites() =>
-            await _context.FavoritesProducts.Include(fp => fp.User).Include(fp => fp.Product).ToListAsync();
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<FavoritesProduct>> GetFavorite(int id)
+        public async Task<IActionResult> GetAll()
         {
-            var fav = await _context.FavoritesProducts.Include(fp => fp.User).Include(fp => fp.Product).FirstOrDefaultAsync(fp => fp.Id == id);
-            if (fav == null) return NotFound();
-            return fav;
+            var favorites = await _service.GetAllAsync();
+            return Ok(favorites);
+        }
+
+        [HttpGet("by-user/{userId}")]
+        public async Task<IActionResult> GetByUser(int userId)
+        {
+            var favorites = await _service.GetByUserIdAsync(userId);
+            return Ok(favorites);
         }
 
         [HttpPost]
-        public async Task<ActionResult<FavoritesProduct>> AddFavorite(FavoritesProduct fav)
+        public async Task<IActionResult> Add([FromBody] CreateFavoritesProductDto dto)
         {
-            _context.FavoritesProducts.Add(fav);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetFavorite), new { id = fav.Id }, fav);
+            var added = await _service.AddAsync(dto);
+            if (added == null) return Conflict("Product already in favorites.");
+            return CreatedAtAction(nameof(GetByUser), new { userId = dto.UserId }, added);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFavorite(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var fav = await _context.FavoritesProducts.FindAsync(id);
-            if (fav == null) return NotFound();
-            _context.FavoritesProducts.Remove(fav);
-            await _context.SaveChangesAsync();
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted) return NotFound();
             return NoContent();
+        }
+
+        [HttpGet("exists")]
+        public async Task<IActionResult> Exists([FromQuery] int userId, [FromQuery] int productId)
+        {
+            var exists = await _service.ExistsAsync(userId, productId);
+            return Ok(exists);
         }
     }
 }
