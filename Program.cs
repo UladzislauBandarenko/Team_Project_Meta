@@ -3,18 +3,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Team_Project_Meta.Data;
+using Team_Project_Meta.Services;
 using Team_Project_Meta.Services.Products;
 using Team_Project_Meta.Services.Users;
+using Team_Project_Meta.Services.Cart;
+using Team_Project_Meta.Services.CartItem;
 using Team_Project_Meta.Services.Order;
 using Team_Project_Meta.Services.OrderItem;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Подключение к PostgreSQL
+// ГЏГ®Г¤ГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГЄ PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Добавление сервисов
+// Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г±ГҐГ°ГўГЁГ±Г®Гў
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -22,7 +25,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new() { Title = "PetCare API", Version = "v1" });
 
-    // Добавляем поддержку JWT
+    // Г„Г®ГЎГ ГўГ«ГїГҐГ¬ ГЇГ®Г¤Г¤ГҐГ°Г¦ГЄГі JWT
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -30,7 +33,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Введите токен"
+        Description = "Г‚ГўГҐГ¤ГЁГІГҐ ГІГ®ГЄГҐГ­"
     });
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -52,6 +55,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<IProductsService, ProductsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICartItemService, CartItemService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -73,14 +78,14 @@ builder.Services.AddAuthentication("Bearer")
 
 var app = builder.Build();
 
-// Использование Swagger
+// Г€Г±ГЇГ®Г«ГјГ§Г®ГўГ Г­ГЁГҐ Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Обработка HTTP-запросов
+// ГЋГЎГ°Г ГЎГ®ГІГЄГ  HTTP-Г§Г ГЇГ°Г®Г±Г®Гў
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

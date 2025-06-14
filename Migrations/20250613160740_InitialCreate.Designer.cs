@@ -12,8 +12,8 @@ using Team_Project_Meta.Data;
 namespace Team_Project_Meta.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250611155743_fix_snake_case")]
-    partial class fix_snake_case
+    [Migration("20250613160740_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
