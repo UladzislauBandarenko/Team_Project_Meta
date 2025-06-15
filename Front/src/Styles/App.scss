@@ -1,0 +1,53 @@
+:root {
+  --primary-color: #c17a5b;
+  --primary-hover: #a66a52;
+  --text-color: #6b7280;
+  --text-dark: #374151;
+  --background-color: #f9fafb;
+  --background-secondary: #f3f4f6;
+  --border-color: #e5e7eb;
+  --footer-bg: #d4b5a0;
+  --footer-text: #8b4513;
+  --padding: 24px;
+
+  @media (max-width: 768px) {
+    --padding: 16px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--text-dark);
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
