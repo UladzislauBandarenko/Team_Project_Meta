@@ -1,4 +1,5 @@
 ﻿using Team_Project_Meta.Data;
+using System.Security.Claims;
 using Team_Project_Meta.DTOs.Products;
 using Microsoft.EntityFrameworkCore;
 using Team_Project_Meta.Models;
@@ -37,11 +38,10 @@ namespace Team_Project_Meta.Services.Products
             {
                 Id = p.Id,
                 ProductName = p.ProductName ?? "",
+                ImageData = p.ImageData,
                 Price = p.Price ?? 0,
-                CategoryName = p.Category?.CategorieName ?? "",
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
-                StockQuantity = p.StockQuantity ?? 0
             });
         }
 
@@ -58,6 +58,7 @@ namespace Team_Project_Meta.Services.Products
             {
                 Id = product.Id,
                 ProductName = product.ProductName,
+                ImageData = product.ImageData,
                 ProductDescription = product.ProductDescription,
                 Price = product.Price ?? 0,
                 CategoryName = product.Category.CategorieName,
@@ -66,6 +67,46 @@ namespace Team_Project_Meta.Services.Products
                 ReviewCount = product.ReviewCount,
                 SellerName = $"{product.Seller.FirstName} {product.Seller.LastName}"
             };
+        }
+
+        public async Task<int> CreateProductAsync(ProductCreateDto dto, int userId, string role)
+        {
+            var sellerId = role == "seller" ? userId : (dto.SellerId ?? userId);
+
+            var product = new Product
+            {
+                ProductName = dto.ProductName,
+                ProductDescription = dto.ProductDescription,
+                ImageData = dto.ImageData,
+                Price = dto.Price,
+                CategoryId = dto.CategoryId,
+                StockQuantity = dto.StockQuantity,
+                SellerId = sellerId
+            };
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return product.Id;
+        }
+
+        public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto, int userId, string role)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return false;
+
+            // Только продавец может обновлять СВОИ товары
+            if (role == "seller" && product.SellerId != userId)
+                return false;
+
+            product.ProductName = dto.ProductName;
+            product.ProductDescription = dto.ProductDescription;
+            product.ImageData = dto.ImageData;
+            product.Price = dto.Price;
+            product.CategoryId = dto.CategoryId;
+            product.StockQuantity = dto.StockQuantity;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 

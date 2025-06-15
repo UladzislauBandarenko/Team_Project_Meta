@@ -10,6 +10,8 @@ namespace Team_Project_Meta.Services.Products
             decimal? maxPrice);
 
         Task<ProductDetailsDto?> GetProductByIdAsync(int id);
+        Task<int> CreateProductAsync(ProductCreateDto dto, int userId, string role);
+        Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto, int userId, string role);
     }
 
 }
