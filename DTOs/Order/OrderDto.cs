@@ -1,4 +1,6 @@
-﻿namespace Team_Project_Meta.DTOs.Order
+﻿using Team_Project_Meta.DTOs.OrderItem;
+
+namespace Team_Project_Meta.DTOs.Order
 {
     public class OrderDto
     {
@@ -8,6 +10,7 @@
         public int? DeliveryServiceId { get; set; }
         public string? TrackingNumber { get; set; }
         public string? Status { get; set; }
+        public List<OrderItemDto>? OrderItems { get; set; } = new();
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
     }
