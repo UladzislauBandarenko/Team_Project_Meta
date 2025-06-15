@@ -28,7 +28,7 @@ namespace Team_Project_Meta.Controllers
 
         // GET: api/Users/me
         [HttpGet("me")]
-        [Authorize(Roles = "admin, buyer")]
+        [Authorize(Roles = "admin, buyer, seller")]
         public async Task<ActionResult<UserDto>> GetMe()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

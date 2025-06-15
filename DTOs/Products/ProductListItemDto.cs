@@ -10,5 +10,6 @@
         public int ReviewCount { get; set; }
         public bool InStock => StockQuantity > 0;
         public int StockQuantity { get; set; }
+        public byte[]? ImageData { get; set; }
     }
 }
