@@ -12,8 +12,8 @@ using Team_Project_Meta.Data;
 namespace Team_Project_Meta.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250613160740_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250615045430_InitSchema")]
+    partial class InitSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -65,6 +65,10 @@ namespace Team_Project_Meta.Migrations
                     b.Property<int>("CartId")
                         .HasColumnType("integer")
                         .HasColumnName("cart_id");
+
+                    b.Property<bool>("IsSelected")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_selected");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("integer")
@@ -162,6 +166,22 @@ namespace Team_Project_Meta.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Address")
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
+                    b.Property<string>("ApartmentNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("apartment_number");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text")
+                        .HasColumnName("city");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("text")
+                        .HasColumnName("country");
+
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_date");
@@ -173,6 +193,14 @@ namespace Team_Project_Meta.Migrations
                     b.Property<DateTime?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_updated_date");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number");
+
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("text")
+                        .HasColumnName("postal_code");
 
                     b.Property<string>("Status")
                         .HasColumnType("text")
@@ -290,6 +318,10 @@ namespace Team_Project_Meta.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_date");
 
+                    b.Property<byte[]>("ImageData")
+                        .HasColumnType("bytea")
+                        .HasColumnName("image_data");
+
                     b.Property<DateTime?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_updated_date");
@@ -378,6 +410,10 @@ namespace Team_Project_Meta.Migrations
                         .HasColumnType("text")
                         .HasColumnName("address");
 
+                    b.Property<string>("ApartmentNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("apartment_number");
+
                     b.Property<string>("City")
                         .HasColumnType("text")
                         .HasColumnName("city");
@@ -409,6 +445,10 @@ namespace Team_Project_Meta.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number");
 
                     b.Property<string>("PostalCode")
                         .HasColumnType("text")

@@ -1,7 +1,9 @@
-﻿namespace Team_Project_Meta.DTOs.Cart
+﻿using Team_Project_Meta.DTOs.CartItem;
+
+namespace Team_Project_Meta.DTOs.Cart
 {
     public class CreateCartDto
     {
-        public int UserId { get; set; }
+        public List<CreateCartItemDto> Items { get; set; } = new();
     }
 }

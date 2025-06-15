@@ -3,6 +3,7 @@ using Team_Project_Meta.Data;
 using Team_Project_Meta.DTOs.Order;
 using Team_Project_Meta.DTOs.OrderItem;
 using Team_Project_Meta.Models;
+using Team_Project_Meta.Services.Users;
 using Team_Project_Meta.Services.DeliveryServices;
 
 namespace Team_Project_Meta.Services.Order
@@ -11,11 +12,13 @@ namespace Team_Project_Meta.Services.Order
     {
         private readonly AppDbContext _context;
         private readonly DeliveryServicesService _deliveryservices;
+        private readonly UsersService _usersService;
 
-        public OrderService(AppDbContext context, DeliveryServicesService deliveryservices)
+        public OrderService(AppDbContext context, DeliveryServicesService deliveryservices, UsersService usersService)
         {
             _context = context;
             _deliveryservices = deliveryservices;
+            _usersService = usersService;
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersAsync()
@@ -59,7 +62,7 @@ namespace Team_Project_Meta.Services.Order
             return MapOrderToDto(order, orderItems);
         }
 
-        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto dto, int userId)
+        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto dto, int userId, bool SaveShiping)
         {
             var trackingNumber = _deliveryservices.GetDeliveryServiceCode(dto.DeliveryServiceId);
             var order = new Models.Order
@@ -69,6 +72,12 @@ namespace Team_Project_Meta.Services.Order
                 TotalPrice = dto.TotalPrice,
                 TrackingNumber = trackingNumber,
                 Status = dto.Status ?? "pending",
+                Address = dto.Address,
+                City = dto.City,
+                PostalCode = dto.PostalCode,
+                Country = dto.Country,
+                PhoneNumber = dto.PhoneNumber,
+                ApartmentNumber = dto.ApartmentNumber,
                 CreatedDate = DateTime.UtcNow,
                 LastUpdatedDate = DateTime.UtcNow
             };
@@ -93,6 +102,30 @@ namespace Team_Project_Meta.Services.Order
             var createdOrderItems = await _context.OrderItems
                 .Where(oi => oi.OrderId == order.Id)
                 .ToListAsync();
+
+            var cart = await _context.Carts
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+            if (cart != null)
+            {
+                _context.Carts.Remove(cart);
+                await _context.SaveChangesAsync();
+            }
+            if (SaveShiping)
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user != null)
+                {
+                    user.Address = dto.Address;
+                    user.City = dto.City;
+                    user.PostalCode = dto.PostalCode;
+                    user.Country = dto.Country;
+                    user.PhoneNumber = dto.PhoneNumber;
+                    user.ApartmentNumber = dto.ApartmentNumber;
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
 
             return MapOrderToDto(order, createdOrderItems);
         }
@@ -119,6 +152,12 @@ namespace Team_Project_Meta.Services.Order
                 Status = o.Status,
                 CreatedDate = o.CreatedDate,
                 LastUpdatedDate = o.LastUpdatedDate,
+                Address = o.Address,
+                City = o.City,
+                PostalCode = o.PostalCode,
+                Country = o.Country,
+                PhoneNumber = o.PhoneNumber,
+                ApartmentNumber = o.ApartmentNumber,
 
                 OrderItems = orderItems?.Select(oi => new OrderItemDto
                 {

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Team_Project_Meta.Data;
-using Team_Project_Meta.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Team_Project_Meta.DTOs.Categories;
+using Team_Project_Meta.Services.Categories;
 
 namespace Team_Project_Meta.Controllers
 {
@@ -9,51 +9,38 @@ namespace Team_Project_Meta.Controllers
     [Route("api/[controller]")]
     public class CategoriesController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public CategoriesController(AppDbContext context) => _context = context;
+        private readonly ICategoriesService _categoriesService;
 
+        public CategoriesController(ICategoriesService categoriesService)
+        {
+            _categoriesService = categoriesService;
+        }
+
+        //Доступен всем
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategories() =>
-            await _context.Categories.ToListAsync();
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Category>> GetCategory(int id)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAll()
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null) return NotFound();
-            return category;
+            var categories = await _categoriesService.GetAllCategoriesAsync();
+            return Ok(categories);
         }
 
+        //Только admin
         [HttpPost]
-        public async Task<ActionResult<Category>> AddCategory(Category category)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AddCategory([FromBody] CreateCategoryDto dto)
         {
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
+            var category = await _categoriesService.AddCategoryAsync(dto);
+            return Ok(category);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, Category category)
-        {
-            if (id != category.Id) return BadRequest();
-            _context.Entry(category).State = EntityState.Modified;
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Categories.Any(c => c.Id == id)) return NotFound();
-                else throw;
-            }
-            return NoContent();
-        }
-
+        // Только admin
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null) return NotFound();
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var success = await _categoriesService.DeleteCategoryAsync(id);
+            return success ? Ok() : NotFound();
         }
     }
 }

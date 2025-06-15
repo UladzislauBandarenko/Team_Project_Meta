@@ -3,6 +3,7 @@ using Team_Project_Meta.Data;
 using Team_Project_Meta.DTOs.CartItem;
 using Team_Project_Meta.Models;
 
+
 namespace Team_Project_Meta.Services.CartItem
 {
     public class CartItemService : ICartItemService
@@ -25,27 +26,34 @@ namespace Team_Project_Meta.Services.CartItem
                 Id = i.Id,
                 CartId = i.CartId,
                 ProductId = i.ProductId,
-                Quantity = i.Quantity
+                Quantity = i.Quantity,
+                IsSelected = i.IsSelected
             });
         }
 
-        public async Task<CartItemDto> AddOrUpdateCartItemAsync(CreateCartItemDto dto)
+        public async Task<CartItemDto> AddOrUpdateCartItemAsync(CreateCartItemDto dto, int userId)
         {
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.Id == dto.CartId && c.UserId == userId);
+            if (cart == null)
+                return null; // Cart not found or does not belong to the user
+
             var existing = await _context.CartItems
                 .FirstOrDefaultAsync(i => i.CartId == dto.CartId && i.ProductId == dto.ProductId);
 
             if (existing != null)
             {
                 existing.Quantity += dto.Quantity;
+                existing.IsSelected = dto.IsSelected;
                 _context.CartItems.Update(existing);
             }
             else
             {
-                var newItem = new Models.CartItem
+                var newItem = new Models.CartItem // Fully qualify the type to avoid ambiguity
                 {
                     CartId = dto.CartId,
                     ProductId = dto.ProductId,
-                    Quantity = dto.Quantity
+                    Quantity = dto.Quantity,
+                    IsSelected = dto.IsSelected
                 };
                 _context.CartItems.Add(newItem);
             }
@@ -60,31 +68,58 @@ namespace Team_Project_Meta.Services.CartItem
                 Id = item.Id,
                 CartId = item.CartId,
                 ProductId = item.ProductId,
-                Quantity = item.Quantity
+                Quantity = item.Quantity,
+                IsSelected = item.IsSelected
             };
         }
 
-        public async Task<bool> UpdateCartItemAsync(int id, UpdateCartItemDto dto)
+        public async Task<bool> UpdateCartItemAsync(int cartId, int itemId, int userId, UpdateCartItemDto dto)
         {
-            var item = await _context.CartItems.FindAsync(id);
-            if (item == null) return false;
+            var cart = await _context.Carts
+                .FirstOrDefaultAsync(c => c.Id == cartId && c.UserId == userId);
+            if (cart == null)
+                return false;
 
-            item.Quantity = dto.Quantity;
-            _context.CartItems.Update(item);
+            var cartItem = await _context.CartItems
+                .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.CartId == cartId);
+
+            if (cartItem == null)
+                return false;
+
+            if (dto.Quantity.HasValue)
+                cartItem.Quantity = dto.Quantity.Value;
+
+            cartItem.IsSelected = dto.IsSelected;
+
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<bool> DeleteCartItemAsync(int id)
+        public async Task<bool> DeleteCartItemAsync(int id, int userId)
         {
-            var item = await _context.CartItems.FindAsync(id);
+            var item = await _context.CartItems
+                .Include(ci => ci.Cart)
+                .FirstOrDefaultAsync(ci => ci.Id == id && ci.Cart.UserId == userId);
+
             if (item == null) return false;
 
             _context.CartItems.Remove(item);
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<bool> IsCartOwnedByUserAsync(int cartId, int userId)
+        {
+            return await _context.Carts.AnyAsync(c => c.Id == cartId && c.UserId == userId);
+        }
+
+        public async Task<bool> IsCartItemOwnedByUserAsync(int cartItemId, int userId)
+        {
+            return await _context.CartItems
+                .Include(ci => ci.Cart)
+                .AnyAsync(ci => ci.Id == cartItemId && ci.Cart.UserId == userId);
         }
     }
 }

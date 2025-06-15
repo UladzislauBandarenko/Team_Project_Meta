@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Team_Project_Meta.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,7 +55,9 @@ namespace Team_Project_Meta.Migrations
                     address = table.Column<string>(type: "text", nullable: true),
                     city = table.Column<string>(type: "text", nullable: true),
                     postal_code = table.Column<string>(type: "text", nullable: true),
-                    country = table.Column<string>(type: "text", nullable: true)
+                    country = table.Column<string>(type: "text", nullable: true),
+                    phone_number = table.Column<string>(type: "text", nullable: true),
+                    apartment_number = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -95,7 +97,13 @@ namespace Team_Project_Meta.Migrations
                     tracking_number = table.Column<string>(type: "text", nullable: true),
                     status = table.Column<string>(type: "text", nullable: true),
                     created_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_updated_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    last_updated_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    address = table.Column<string>(type: "text", nullable: true),
+                    city = table.Column<string>(type: "text", nullable: true),
+                    postal_code = table.Column<string>(type: "text", nullable: true),
+                    country = table.Column<string>(type: "text", nullable: true),
+                    phone_number = table.Column<string>(type: "text", nullable: true),
+                    apartment_number = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,6 +135,7 @@ namespace Team_Project_Meta.Migrations
                     average_rating = table.Column<decimal>(type: "numeric", nullable: false),
                     review_count = table.Column<int>(type: "integer", nullable: false),
                     stock_quantity = table.Column<int>(type: "integer", nullable: true),
+                    image_data = table.Column<byte[]>(type: "bytea", nullable: true),
                     created_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     last_updated_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -178,7 +187,8 @@ namespace Team_Project_Meta.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     cart_id = table.Column<int>(type: "integer", nullable: false),
                     product_id = table.Column<int>(type: "integer", nullable: false),
-                    quantity = table.Column<int>(type: "integer", nullable: true)
+                    quantity = table.Column<int>(type: "integer", nullable: true),
+                    is_selected = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

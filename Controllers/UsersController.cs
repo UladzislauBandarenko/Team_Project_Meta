@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Team_Project_Meta.DTOs.Users;
 using Team_Project_Meta.Services.Users;
 
@@ -25,7 +26,19 @@ namespace Team_Project_Meta.Controllers
             return Ok(users);
         }
 
-        // GET: api/Users/5
+        // GET: api/Users/me
+        [HttpGet("me")]
+        [Authorize(Roles = "admin, buyer")]
+        public async Task<ActionResult<UserDto>> GetMe()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized("User not found");
+            var user = await _usersService.GetUserByIdAsync(int.Parse(userId));
+            if (user == null) return NotFound("User not found");
+            return Ok(user);
+        }
+
+        // GET: api/Users/
         [HttpGet("{id}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult<UserDto>> GetUserById(int id)
@@ -53,6 +66,19 @@ namespace Team_Project_Meta.Controllers
             var response = await _usersService.LoginUserAsync(dto);
             if (response == null) return Unauthorized("Invalid credentials");
             return Ok(response);
+        }
+
+        // PUT: api/users/
+        [HttpPut()]
+        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized("User not found");
+            var success = await _usersService.UpdateUserAsync(int.Parse(userId), dto);
+            if (!success)
+                return NotFound(new { message = "User not found." });
+
+            return Ok(); // 204 - Successfully updated, no response body
         }
     }
 }

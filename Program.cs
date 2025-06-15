@@ -11,6 +11,7 @@ using Team_Project_Meta.Services.CartItem;
 using Team_Project_Meta.Services.Order;
 using Team_Project_Meta.Services.FavoritesProducts;
 using Team_Project_Meta.Services.DeliveryServices;
+using Team_Project_Meta.Services.Categories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,10 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IFavoritesProductsService, FavoritesProductsService>();
 builder.Services.AddScoped<DeliveryServicesService>();
 builder.Services.AddHostedService<OrderStatusUpdater>();
+builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+builder.Services.AddScoped<UsersService>();
+
+
 
 
 builder.Services.AddAuthentication("Bearer")
