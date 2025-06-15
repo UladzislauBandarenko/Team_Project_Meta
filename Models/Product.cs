@@ -11,6 +11,7 @@
         public decimal AverageRating { get; set; } = 0.0M;
         public int ReviewCount { get; set; } = 0;
         public int? StockQuantity { get; set; }
+        public byte[]? ImageData { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
 

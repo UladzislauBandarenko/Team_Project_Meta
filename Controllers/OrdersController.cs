@@ -70,11 +70,11 @@ namespace Team_Project_Meta.Controllers
         // 5. Создать заказ - только buyer
         [HttpPost]
         [Authorize(Roles = "buyer")]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto, bool SaveShiping)
         {
             int userId = GetUserIdFromClaims();
 
-            var createdOrder = await _service.CreateOrderAsync(dto, userId);
+            var createdOrder = await _service.CreateOrderAsync(dto, userId, SaveShiping);
 
             return CreatedAtAction(nameof(GetOrder), new { id = createdOrder.Id }, createdOrder);
         }

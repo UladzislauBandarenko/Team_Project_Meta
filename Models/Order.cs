@@ -10,6 +10,12 @@
         public string? Status { get; set; } // pending, completed, cancelled
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? PostalCode { get; set; }
+        public string? Country { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? ApartmentNumber { get; set; }
 
         public User? User { get; set; }
         public DeliveryService? DeliveryService { get; set; }
