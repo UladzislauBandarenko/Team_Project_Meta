@@ -9,5 +9,6 @@ namespace Team_Project_Meta.Services.Users
         Task<UserDto?> RegisterUserAsync(UserRegisterDto dto);
         Task<AuthResponseDto?> LoginUserAsync(UserLoginDto dto);
         Task<bool> UpdateUserAsync(int id, UserUpdateDto dto);
+        Task<AuthResponseDto?> RegisterAndLoginAsync(UserRegisterDto dto);
     }
 }

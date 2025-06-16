@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Team_Project_Meta.Helpers;
 using BCrypt.Net;
 using Team_Project_Meta.DTOs.CartItem;
+using Team_Project_Meta.Services.Auth;
 
 namespace Team_Project_Meta.Services.Users
 {
@@ -14,11 +15,13 @@ namespace Team_Project_Meta.Services.Users
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
+        private readonly JwtService _jwtService;
 
-        public UsersService(AppDbContext context, IConfiguration config)
+        public UsersService(AppDbContext context, IConfiguration config, JwtService jwtService)
         {
             _context = context;
             _config = config;
+            _jwtService = jwtService;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -92,9 +95,9 @@ namespace Team_Project_Meta.Services.Users
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-            Console.WriteLine($"DTO password: {dto.Password}");
-            Console.WriteLine($"User hash: {user.PasswordHash}");
-            Console.WriteLine($"Match: {BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)}");
+            //Console.WriteLine($"DTO password: {dto.Password}");
+            //Console.WriteLine($"User hash: {user.PasswordHash}");
+            //Console.WriteLine($"Match: {BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)}");
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return null;
@@ -141,6 +144,46 @@ namespace Team_Project_Meta.Services.Users
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<AuthResponseDto?> RegisterAndLoginAsync(UserRegisterDto dto)
+        {
+            var existing = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (existing != null) return null;
+
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = "buyer",
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var token = _jwtService.GenerateToken(user);
+
+            return new AuthResponseDto
+            {
+                Token = token,
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Role = user.Role,
+                    Address = user.Address,
+                    City = user.City,
+                    PostalCode = user.PostalCode,
+                    Country = user.Country,
+                    PhoneNumber = user.PhoneNumber,
+                    ApartmentNumber = user.ApartmentNumber
+                }
+            };
         }
     }
 }

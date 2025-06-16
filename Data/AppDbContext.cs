@@ -39,6 +39,12 @@ namespace Team_Project_Meta.Data
                     property.SetColumnName(ToSnakeCase(property.Name));
                 }
             }
+
+            modelBuilder.Entity<Product>()
+            .HasOne(p => p.Category)
+            .WithMany(c => c.Products)
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

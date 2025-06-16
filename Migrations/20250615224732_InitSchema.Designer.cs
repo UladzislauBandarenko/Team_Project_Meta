@@ -12,7 +12,7 @@ using Team_Project_Meta.Data;
 namespace Team_Project_Meta.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250615045430_InitSchema")]
+    [Migration("20250615224732_InitSchema")]
     partial class InitSchema
     {
         /// <inheritdoc />

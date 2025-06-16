@@ -51,11 +51,11 @@ namespace Team_Project_Meta.Controllers
         // POST: api/Users/register
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<UserDto>> Register([FromBody] UserRegisterDto dto)
+        public async Task<ActionResult<AuthResponseDto>> Register([FromBody] UserRegisterDto dto)
         {
-            var created = await _usersService.RegisterUserAsync(dto);
-            if (created == null) return BadRequest("User could not be registered");
-            return CreatedAtAction(nameof(GetUserById), new { id = created.Id }, created);
+            var response = await _usersService.RegisterAndLoginAsync(dto);
+            if (response == null) return BadRequest("Registration failed");
+            return Ok(response);
         }
 
         // POST: api/Users/login

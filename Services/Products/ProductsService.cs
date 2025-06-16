@@ -42,6 +42,8 @@ namespace Team_Project_Meta.Services.Products
                 Price = p.Price ?? 0,
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
+                StockQuantity = p.StockQuantity ?? 0,
+                CategoryName = p.Category?.CategorieName ?? ""
             });
         }
 
@@ -61,7 +63,7 @@ namespace Team_Project_Meta.Services.Products
                 ImageData = product.ImageData,
                 ProductDescription = product.ProductDescription,
                 Price = product.Price ?? 0,
-                CategoryName = product.Category.CategorieName,
+                CategoryName = product.Category?.CategorieName ?? "",
                 StockQuantity = product.StockQuantity ?? 0,
                 AverageRating = product.AverageRating,
                 ReviewCount = product.ReviewCount,
@@ -109,5 +111,4 @@ namespace Team_Project_Meta.Services.Products
             return true;
         }
     }
-
 }

@@ -12,6 +12,7 @@ using Team_Project_Meta.Services.Order;
 using Team_Project_Meta.Services.FavoritesProducts;
 using Team_Project_Meta.Services.DeliveryServices;
 using Team_Project_Meta.Services.Categories;
+using Team_Project_Meta.Services.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +65,7 @@ builder.Services.AddScoped<IFavoritesProductsService, FavoritesProductsService>(
 builder.Services.AddScoped<DeliveryServicesService>();
 builder.Services.AddHostedService<OrderStatusUpdater>();
 builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsersService>();
 
 
@@ -87,6 +89,17 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // или твой порт фронта
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
 var app = builder.Build();
 
 // Èñïîëüçîâàíèå Swagger
@@ -98,6 +111,9 @@ if (app.Environment.IsDevelopment())
 
 // Îáðàáîòêà HTTP-çàïðîñîâ
 app.UseHttpsRedirection();
+
+app.UseRouting();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
