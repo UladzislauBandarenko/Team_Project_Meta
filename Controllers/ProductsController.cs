@@ -39,23 +39,53 @@ namespace Team_Project_Meta.Controllers
 
         [Authorize(Roles = "admin,seller")]
         [HttpPost]
-        public async Task<IActionResult> CreateProduct([FromBody] ProductCreateDto dto)
+        [RequestSizeLimit(10_000_000)]
+        public async Task<IActionResult> CreateProduct([FromForm] ProductCreateDto form)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
-            var productId = await _productsService.CreateProductAsync(dto, userId, role);
+            byte[]? imageData = null;
+            if (form.Image != null && form.Image.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await form.Image.CopyToAsync(ms);
+                imageData = ms.ToArray();
+            }
+
+            var dto = new ProductCreateDto
+            {
+                ProductName = form.ProductName,
+                ProductDescription = form.ProductDescription,
+                Price = form.Price,
+                CategoryId = form.CategoryId,
+                StockQuantity = form.StockQuantity,
+                SellerId = form.SellerId
+            };
+
+            var productId = await _productsService.CreateProductAsync(dto, userId, role, imageData);
             return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
         }
 
+
+
+
         [Authorize(Roles = "admin,seller")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDto dto)
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDto dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
-            var success = await _productsService.UpdateProductAsync(id, dto, userId, role);
+            byte[]? imageData = null;
+            if (dto.Image != null && dto.Image.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await dto.Image.CopyToAsync(ms);
+                imageData = ms.ToArray();
+            }
+
+            var success = await _productsService.UpdateProductAsync(id, dto, userId, role, imageData);
             if (!success)
                 return Forbid();
 

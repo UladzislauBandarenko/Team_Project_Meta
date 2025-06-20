@@ -1,27 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BCrypt.Net;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Team_Project_Meta.Data;
-using Team_Project_Meta.DTOs.Users;
-using Team_Project_Meta.Models;
-using Microsoft.Extensions.Configuration;
-using Team_Project_Meta.Helpers;
-using BCrypt.Net;
 using Team_Project_Meta.DTOs.CartItem;
+using Team_Project_Meta.DTOs.Users;
+using Team_Project_Meta.Helpers;
+using Team_Project_Meta.Models;
 using Team_Project_Meta.Services.Auth;
+using Team_Project_Meta.Services.Notification;
 
 namespace Team_Project_Meta.Services.Users
 {
     public class UsersService : IUsersService
     {
+        private static readonly ConcurrentDictionary<string, (string Code, DateTime Expiry)> _resetCodes = new();
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
         private readonly JwtService _jwtService;
+        private readonly INotificationService _notificationService;
 
-        public UsersService(AppDbContext context, IConfiguration config, JwtService jwtService)
+        public UsersService(AppDbContext context, IConfiguration config, JwtService jwtService, INotificationService notificationService)
         {
             _context = context;
             _config = config;
             _jwtService = jwtService;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -107,6 +113,7 @@ namespace Team_Project_Meta.Services.Users
             return new AuthResponseDto
             {
                 Token = jwt,
+                RefreshToken = _jwtService.GenerateRefreshToken(user),
                 User = new UserDto
                 {
                     Id = user.Id,
@@ -165,6 +172,14 @@ namespace Team_Project_Meta.Services.Users
             await _context.SaveChangesAsync();
 
             var token = _jwtService.GenerateToken(user);
+            // Send welcome email
+            var subject = "Welcome to Pet Shop!";
+            var body = $@"
+                <h2>Welcome, {dto.FirstName}!</h2>
+                <p>Thanks for registering with us. We're glad to have you on board.</p>
+                <p>Feel free to browse our store and place your first order.</p>
+                <p>– The Pet Shop Team</p>";
+            await _notificationService.SendEmailAsync(user.Email, subject, body);
 
             return new AuthResponseDto
             {
@@ -185,5 +200,88 @@ namespace Team_Project_Meta.Services.Users
                 }
             };
         }
+        public async Task<AuthResponseDto?> RefreshTokenAsync(string refreshToken)
+        {
+            var principal = _jwtService.GetPrincipalFromExpiredToken(refreshToken);
+            if (principal == null)
+                return null;
+
+            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return null;
+
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+                return null;
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return null;
+
+            var newAccessToken = _jwtService.GenerateToken(user);
+            var newRefreshToken = _jwtService.GenerateRefreshToken(user);
+
+            return new AuthResponseDto
+            {
+                Token = newAccessToken,
+                RefreshToken = newRefreshToken,
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName!,
+                    LastName = user.LastName!,
+                    Email = user.Email!,
+                    Role = user.Role!,
+                    Address = user.Address,
+                    City = user.City,
+                    PostalCode = user.PostalCode,
+                    Country = user.Country,
+                    PhoneNumber = user.PhoneNumber,
+                    ApartmentNumber = user.ApartmentNumber
+                }
+            };
+        }
+
+        public async Task<bool> RequestPasswordResetAsync(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) return false;
+
+            var code = new Random().Next(100000, 999999).ToString(); // 6-digit code
+            var expiry = DateTime.UtcNow.AddMinutes(10);
+            _resetCodes[email] = (code, expiry);
+
+            var subject = "Your Password Reset Code";
+            var body = $@"
+                <p>Hello {user.FirstName},</p>
+                <p>Your password reset code is: <strong>{code}</strong></p>
+                <p>This code will expire in 10 minutes.</p>
+                <p>If you didn't request a reset, please ignore this email.</p>";
+
+            await _notificationService.SendEmailAsync(email, subject, body);
+
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordWithCodeAsync(string email, string code, string newPassword)
+        {
+            if (!_resetCodes.TryGetValue(email, out var entry))
+                return false;
+
+            if (entry.Code != code || entry.Expiry < DateTime.UtcNow)
+                return false;
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return false;
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            _resetCodes.TryRemove(email, out _); // Cleanup after use
+
+            return true;
+        }
+
+
     }
 }

@@ -8,6 +8,8 @@
         public int? Quantity { get; set; }
         public bool IsSelected { get; set; } = true;
         public decimal? Price { get; set; }
+        public string? ProductName { get; set; }
+        public string? ImageBase64 { get; set; }
 
     }
 }

@@ -21,13 +21,34 @@ namespace Team_Project_Meta.Services.CartItem
                 .Where(i => i.CartId == cartId)
                 .ToListAsync();
 
-            return items.Select(i => new CartItemDto
+            var productIds = items.Select(i => i.ProductId).Distinct().ToList();
+
+            var products = await _context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => new
+                {
+                    p.Price,
+                    p.ImageData,
+                    p.ProductName
+                });
+
+            return items.Select(i =>
             {
-                Id = i.Id,
-                CartId = i.CartId,
-                ProductId = i.ProductId,
-                Quantity = i.Quantity,
-                IsSelected = i.IsSelected
+                products.TryGetValue(i.ProductId, out var productData);
+
+                string? base64Image = productData?.ImageData != null? Convert.ToBase64String(productData.ImageData): null;
+
+                return new CartItemDto
+                {
+                    Id = i.Id,
+                    CartId = i.CartId,
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    IsSelected = i.IsSelected,
+                    Price = productData?.Price ?? 0,
+                    ImageBase64 = base64Image,
+                    ProductName = productData?.ProductName
+                };
             });
         }
 

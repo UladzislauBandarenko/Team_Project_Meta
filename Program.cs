@@ -1,18 +1,21 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Team_Project_Meta.Data;
+using Team_Project_Meta.DTOs.Products;
 using Team_Project_Meta.Services;
-using Team_Project_Meta.Services.Products;
-using Team_Project_Meta.Services.Users;
+using Team_Project_Meta.Services.Auth;
 using Team_Project_Meta.Services.Cart;
 using Team_Project_Meta.Services.CartItem;
-using Team_Project_Meta.Services.Order;
-using Team_Project_Meta.Services.FavoritesProducts;
-using Team_Project_Meta.Services.DeliveryServices;
 using Team_Project_Meta.Services.Categories;
-using Team_Project_Meta.Services.Auth;
+using Team_Project_Meta.Services.DeliveryServices;
+using Team_Project_Meta.Services.FavoritesProducts;
+using Team_Project_Meta.Services.Notification;
+using Team_Project_Meta.Services.Order;
+using Team_Project_Meta.Services.Products;
+using Team_Project_Meta.Services.Reviews;
+using Team_Project_Meta.Services.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,7 +70,8 @@ builder.Services.AddHostedService<OrderStatusUpdater>();
 builder.Services.AddScoped<ICategoriesService, CategoriesService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsersService>();
-
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
 
@@ -107,13 +111,14 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 // Îáðàáîòêà HTTP-çàïðîñîâ
 app.UseHttpsRedirection();
 
 app.UseRouting();
-app.UseCors();
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();

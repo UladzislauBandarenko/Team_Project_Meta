@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Team_Project_Meta.Data;
+using Team_Project_Meta.DTOs.Reviews;
 using Team_Project_Meta.Models;
+using Team_Project_Meta.Services.Reviews;
 
 namespace Team_Project_Meta.Controllers
 {
@@ -9,50 +13,55 @@ namespace Team_Project_Meta.Controllers
     [Route("api/[controller]")]
     public class ReviewsController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public ReviewsController(AppDbContext context) => _context = context;
+        private readonly IReviewService _reviewService;
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Review>>> GetReviews() =>
-            await _context.Reviews.Include(r => r.User).Include(r => r.Product).ToListAsync();
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Review>> GetReview(int id)
+        public ReviewsController(IReviewService reviewService)
         {
-            var review = await _context.Reviews.Include(r => r.User).Include(r => r.Product).FirstOrDefaultAsync(r => r.Id == id);
-            if (review == null) return NotFound();
-            return review;
+            _reviewService = reviewService;
         }
 
+        [Authorize(Roles = "buyer")]
         [HttpPost]
-        public async Task<ActionResult<Review>> AddReview(Review review)
+        public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto dto)
         {
-            _context.Reviews.Add(review);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetReview), new { id = review.Id }, review);
+            // Validate rating
+            if (dto.Rating < 1 || dto.Rating > 5)
+                return BadRequest("Rating must be between 1 and 5.");
+
+            // Get user ID from JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var success = await _reviewService.CreateReviewAsync(dto, userId);
+            if (!success)
+                return BadRequest("Review could not be created. Make sure the order is delivered and the review is not duplicated.");
+
+            return Ok("Review created successfully.");
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReview(int id, Review review)
+        // GET api/reviews/product/{productId}
+        [HttpGet("product/{productId}")]
+        [AllowAnonymous]  // allow public read access, remove if auth required
+        public async Task<IActionResult> GetReviewsByProductId(int productId)
         {
-            if (id != review.Id) return BadRequest();
-            _context.Entry(review).State = EntityState.Modified;
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Reviews.Any(r => r.Id == id)) return NotFound();
-                else throw;
-            }
-            return NoContent();
+            var reviews = await _reviewService.GetReviewsByProductIdAsync(productId);
+            return Ok(reviews);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReview(int id)
+        // DELETE api/reviews/{reviewId}
+        [Authorize(Roles = "admin")]
+        [HttpDelete("{reviewId}")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
         {
-            var review = await _context.Reviews.FindAsync(id);
-            if (review == null) return NotFound();
-            _context.Reviews.Remove(review);
-            await _context.SaveChangesAsync();
+            // Optional: check user is owner or admin here
+
+            var success = await _reviewService.DeleteReviewAsync(reviewId);
+            if (!success)
+                return NotFound();
+
             return NoContent();
         }
     }

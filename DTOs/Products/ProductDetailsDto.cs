@@ -11,6 +11,6 @@
         public decimal AverageRating { get; set; }
         public int ReviewCount { get; set; }
         public string SellerName { get; set; }
-        public byte[]? ImageData { get; set; }
+        public string? ImageBase64 { get; set; }
     }
 }

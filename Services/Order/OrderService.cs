@@ -5,6 +5,7 @@ using Team_Project_Meta.DTOs.OrderItem;
 using Team_Project_Meta.Models;
 using Team_Project_Meta.Services.Users;
 using Team_Project_Meta.Services.DeliveryServices;
+using Team_Project_Meta.Services.Notification;
 
 namespace Team_Project_Meta.Services.Order
 {
@@ -13,12 +14,15 @@ namespace Team_Project_Meta.Services.Order
         private readonly AppDbContext _context;
         private readonly DeliveryServicesService _deliveryservices;
         private readonly UsersService _usersService;
+        private readonly INotificationService _notificationService;
 
-        public OrderService(AppDbContext context, DeliveryServicesService deliveryservices, UsersService usersService)
+        public OrderService(AppDbContext context, DeliveryServicesService deliveryservices, UsersService usersService, INotificationService notificationService)
         {
             _context = context;
             _deliveryservices = deliveryservices;
             _usersService = usersService;
+            _notificationService = notificationService;
+
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersAsync()
@@ -125,6 +129,15 @@ namespace Team_Project_Meta.Services.Order
                     await _context.SaveChangesAsync();
                 }
             }
+            var userEmail = (await _context.Users.FirstOrDefaultAsync(u => u.Id == userId))?.Email;
+
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                var subject = "Your Order Has Been Created";
+                var body = $"<h2>Thank you for your order!</h2><p>Tracking Number: {order.TrackingNumber}</p>";
+                await _notificationService.SendEmailAsync(userEmail, subject, body);
+            }
+
 
 
             return MapOrderToDto(order, createdOrderItems);

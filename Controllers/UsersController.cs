@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Team_Project_Meta.Data;
 using Team_Project_Meta.DTOs.Users;
+using Team_Project_Meta.Services.Auth;
 using Team_Project_Meta.Services.Users;
 
 namespace Team_Project_Meta.Controllers
@@ -80,5 +83,31 @@ namespace Team_Project_Meta.Controllers
 
             return Ok(); // 204 - Successfully updated, no response body
         }
+        // POST: api/Users/refresh-token
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
+        {
+            var result = await _usersService.RefreshTokenAsync(dto.RefreshToken);
+            if (result == null)
+                return Unauthorized("Invalid refresh token");
+
+            return Ok(result);
+        }
+
+        [HttpPost("request-reset")]
+        public async Task<IActionResult> RequestReset([FromBody] PasswordResetRequestDto dto)
+        {
+            var result = await _usersService.RequestPasswordResetAsync(dto.Email);
+            return result ? Ok("Reset code sent") : NotFound("Email not found");
+        }
+
+        [HttpPost("confirm-reset")]
+        public async Task<IActionResult> ConfirmReset([FromBody] PasswordResetConfirmDto dto)
+        {
+            var result = await _usersService.ResetPasswordWithCodeAsync(dto.Email, dto.Code, dto.NewPassword);
+            return result ? Ok("Password changed successfully") : BadRequest("Invalid code or expired");
+        }
+
+
     }
 }

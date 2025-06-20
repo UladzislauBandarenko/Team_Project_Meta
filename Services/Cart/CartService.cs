@@ -88,9 +88,16 @@ namespace Team_Project_Meta.Services.Cart
         private CartDto MapCartToDto(Models.Cart cart, List<Models.CartItem> items)
         {
             var productIds = items.Select(i => i.ProductId).Distinct().ToList();
+
+            // Fetch all relevant products with needed data: Price, ImageData, ProductName
             var products = _context.Products
                 .Where(p => productIds.Contains(p.Id))
-                .ToDictionary(p => p.Id, p => p.Price);
+                .ToDictionary(p => p.Id, p => new
+                {
+                    p.Price,
+                    p.ImageData,
+                    p.ProductName
+                });
 
             return new CartDto
             {
@@ -100,7 +107,10 @@ namespace Team_Project_Meta.Services.Cart
                 LastUpdatedDate = cart.LastUpdatedDate,
                 Items = items.Select(i =>
                 {
-                    products.TryGetValue(i.ProductId, out var price);
+                    products.TryGetValue(i.ProductId, out var productData);
+
+                    // Convert ImageData (byte[]) to Base64 string
+                    string? base64Image = productData?.ImageData != null ? Convert.ToBase64String(productData.ImageData): null;
 
                     return new CartItemDto
                     {
@@ -109,7 +119,9 @@ namespace Team_Project_Meta.Services.Cart
                         ProductId = i.ProductId,
                         Quantity = i.Quantity,
                         IsSelected = i.IsSelected,
-                        Price = price
+                        Price = productData?.Price ?? 0,
+                        ImageBase64 = base64Image,
+                        ProductName = productData?.ProductName
                     };
                 }).ToList()
             };

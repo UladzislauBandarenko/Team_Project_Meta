@@ -2,12 +2,12 @@
 {
     public class ProductCreateDto
     {
-        public string ProductName { get; set; } = null!;
-        public string ProductDescription { get; set; } = null!;
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductDescription { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        public int CategoryId { get; set; } 
+        public int CategoryId { get; set; }
         public int StockQuantity { get; set; }
-        public byte[]? ImageData { get; set; }
         public int? SellerId { get; set; }
+        public IFormFile? Image { get; set; }
     }
 }
