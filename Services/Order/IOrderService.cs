@@ -9,6 +9,7 @@ namespace Team_Project_Meta.Services.Order
         Task<OrderDto?> GetOrderByIdAsync(int id);                         // Один заказ по ID
         Task<OrderDto> CreateOrderAsync(CreateOrderDto dto, int userId, bool SaveShiping);   // Создание
         Task<bool> DeleteOrderAsync(int id);                               // Удаление
+        Task<IEnumerable<OrderDto>> GetOrdersBySellerIdAsync(int sellerId);
     }
 }
 

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Team_Project_Meta.Data;
+using Team_Project_Meta.DTOs.Payments;
 using Team_Project_Meta.Models;
+using Team_Project_Meta.Services.Payment;
 
 namespace Team_Project_Meta.Controllers
 {
@@ -9,51 +11,25 @@ namespace Team_Project_Meta.Controllers
     [Route("api/[controller]")]
     public class PaymentsController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public PaymentsController(AppDbContext context) => _context = context;
+        private readonly IPaymentService _paymentService;
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Payment>>> GetPayments() =>
-            await _context.Payments.ToListAsync();
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Payment>> GetPayment(int id)
+        public PaymentsController(IPaymentService paymentService)
         {
-            var payment = await _context.Payments.FindAsync(id);
-            if (payment == null) return NotFound();
-            return payment;
+            _paymentService = paymentService;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Payment>> AddPayment(Payment payment)
+        [HttpPost("process")]
+        public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequestDto request)
         {
-            _context.Payments.Add(payment);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetPayment), new { id = payment.Id }, payment);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePayment(int id, Payment payment)
-        {
-            if (id != payment.Id) return BadRequest();
-            _context.Entry(payment).State = EntityState.Modified;
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException)
+            try
             {
-                if (!_context.Payments.Any(p => p.Id == id)) return NotFound();
-                else throw;
+                var response = await _paymentService.CreatePaymentAsync(request);
+                return Ok(response);
             }
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePayment(int id)
-        {
-            var payment = await _context.Payments.FindAsync(id);
-            if (payment == null) return NotFound();
-            _context.Payments.Remove(payment);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 }

@@ -67,6 +67,20 @@ namespace Team_Project_Meta.Controllers
             return Forbid();
         }
 
+        [Authorize(Roles = "seller")]
+        [HttpGet("seller")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersBySellerId()
+        {
+            int sellerId = GetUserIdFromClaims();
+
+            var orders = await _service.GetOrdersBySellerIdAsync(sellerId);
+
+            if (!orders.Any())
+                return NotFound($"No orders found for seller ID {sellerId}.");
+
+            return Ok(orders);
+        }
+
         // 5. Создать заказ - только buyer
         [HttpPost]
         [Authorize(Roles = "buyer")]

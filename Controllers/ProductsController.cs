@@ -42,7 +42,7 @@ namespace Team_Project_Meta.Controllers
         [RequestSizeLimit(10_000_000)]
         public async Task<IActionResult> CreateProduct([FromForm] ProductCreateDto form)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            int userId = GetUserIdFromToken();
             var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
             byte[]? imageData = null;
@@ -60,7 +60,6 @@ namespace Team_Project_Meta.Controllers
                 Price = form.Price,
                 CategoryId = form.CategoryId,
                 StockQuantity = form.StockQuantity,
-                SellerId = form.SellerId
             };
 
             var productId = await _productsService.CreateProductAsync(dto, userId, role, imageData);
@@ -74,7 +73,7 @@ namespace Team_Project_Meta.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDto dto)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            int userId = GetUserIdFromToken();
             var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
             byte[]? imageData = null;
@@ -91,6 +90,38 @@ namespace Team_Project_Meta.Controllers
 
             return NoContent();
         }
+
+        [Authorize(Roles = "seller")]
+        [HttpGet("seller")]
+        public async Task<ActionResult<IEnumerable<ProductDetailsDto>>> GetProductsBySellerId()
+        {
+            int sellerId = GetUserIdFromToken();
+            var products = await _productsService.GetProductsBySellerIdAsync(sellerId);
+
+            if (!products.Any())
+            {
+                return NotFound($"No products found for seller ID {sellerId}.");
+            }
+
+            return Ok(products);
+        }
+
+
+        private int GetUserIdFromToken()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                throw new UnauthorizedAccessException("Invalid user ID in token.");
+            return userId;
+        }
+
+        [HttpGet("bestsellers")]
+        public async Task<ActionResult<IEnumerable<ProductListItemDto>>> GetTopBestsellers()
+        {
+            var products = await _productsService.GetTopBestsellingProductsAsync();
+            return Ok(products);
+        }
+
     }
 
 }

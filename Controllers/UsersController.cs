@@ -83,6 +83,19 @@ namespace Team_Project_Meta.Controllers
 
             return Ok(); // 204 - Successfully updated, no response body
         }
+
+        [HttpPost("promote")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> PromoteUser([FromBody] PromoteUserDto dto)
+        {
+            var result = await _usersService.PromoteUserAsync(dto);
+            if (!result)
+                return BadRequest(new { message = "Invalid user ID or role." });
+
+            return Ok(new { message = $"User promoted to role: {dto.Role}" });
+        }
+
+
         // POST: api/Users/refresh-token
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
@@ -93,6 +106,17 @@ namespace Team_Project_Meta.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("register-seller")]
+        public async Task<IActionResult> RegisterSeller([FromBody] SellerRegisterDto dto)
+        {
+            var result = await _usersService.RegisterSellerAsync(dto);
+            if (result == null)
+                return BadRequest(new { message = "Email is already in use." });
+
+            return Ok(result);
+        }
+
 
         [HttpPost("request-reset")]
         public async Task<IActionResult> RequestReset([FromBody] PasswordResetRequestDto dto)

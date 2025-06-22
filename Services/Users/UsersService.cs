@@ -200,6 +200,62 @@ namespace Team_Project_Meta.Services.Users
                 }
             };
         }
+
+        public async Task<AuthResponseDto?> RegisterSellerAsync(SellerRegisterDto dto)
+        {
+            var existing = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (existing != null) return null;
+
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = "seller",
+                CreatedDate = DateTime.UtcNow,
+                Address = dto.Address,
+                City = dto.City,
+                PostalCode = dto.PostalCode,
+                Country = dto.Country,
+                PhoneNumber = dto.PhoneNumber,
+                ApartmentNumber = dto.ApartmentNumber
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var token = _jwtService.GenerateToken(user);
+
+            var subject = "Welcome to Pet Shop – Seller Access";
+            var body = $@"
+                <h2>Welcome, {dto.FirstName}!</h2>
+                <p>You have successfully registered as a <strong>seller</strong>.</p>
+                <p>You can now start listing your products on our marketplace.</p>
+                <p>– The Pet Shop Team</p>";
+
+            await _notificationService.SendEmailAsync(user.Email, subject, body);
+
+            return new AuthResponseDto
+            {
+                Token = token,
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Role = user.Role,
+                    Address = user.Address,
+                    City = user.City,
+                    PostalCode = user.PostalCode,
+                    Country = user.Country,
+                    PhoneNumber = user.PhoneNumber,
+                    ApartmentNumber = user.ApartmentNumber
+                }
+            };
+        }
+
         public async Task<AuthResponseDto?> RefreshTokenAsync(string refreshToken)
         {
             var principal = _jwtService.GetPrincipalFromExpiredToken(refreshToken);
@@ -240,6 +296,23 @@ namespace Team_Project_Meta.Services.Users
                 }
             };
         }
+        public async Task<bool> PromoteUserAsync(PromoteUserDto dto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
+            if (user == null) return false;
+
+            var validRoles = new[] { "seller", "admin" };
+            if (!validRoles.Contains(dto.Role.ToLower()))
+                return false;
+
+            user.Role = dto.Role.ToLower();
+            user.LastUpdatedDate = DateTime.UtcNow;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
 
         public async Task<bool> RequestPasswordResetAsync(string email)
         {

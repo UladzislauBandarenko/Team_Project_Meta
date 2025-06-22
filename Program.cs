@@ -5,6 +5,7 @@ using System.Text;
 using Team_Project_Meta.Data;
 using Team_Project_Meta.DTOs.Products;
 using Team_Project_Meta.Services;
+using Team_Project_Meta.Services.Admin;
 using Team_Project_Meta.Services.Auth;
 using Team_Project_Meta.Services.Cart;
 using Team_Project_Meta.Services.CartItem;
@@ -15,6 +16,7 @@ using Team_Project_Meta.Services.Notification;
 using Team_Project_Meta.Services.Order;
 using Team_Project_Meta.Services.Products;
 using Team_Project_Meta.Services.Reviews;
+using Team_Project_Meta.Services.Seller;
 using Team_Project_Meta.Services.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,6 +74,8 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsersService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<ISellerService, SellerService>();
 
 
 

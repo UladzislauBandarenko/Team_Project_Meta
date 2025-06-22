@@ -34,6 +34,7 @@ namespace Team_Project_Meta.Services.Order
 
             var orderItems = await _context.OrderItems
                 .Where(oi => orderIds.Contains(oi.OrderId))
+                .Include(oi => oi.Product)
                 .ToListAsync();
 
             return orders.Select(o => MapOrderToDto(o, orderItems.Where(oi => oi.OrderId == o.Id))).ToList();
@@ -49,6 +50,7 @@ namespace Team_Project_Meta.Services.Order
 
             var orderItems = await _context.OrderItems
                 .Where(oi => orderIds.Contains(oi.OrderId))
+                .Include(oi => oi.Product)
                 .ToListAsync();
 
             return orders.Select(o => MapOrderToDto(o, orderItems.Where(oi => oi.OrderId == o.Id))).ToList();
@@ -61,14 +63,33 @@ namespace Team_Project_Meta.Services.Order
 
             var orderItems = await _context.OrderItems
                 .Where(oi => oi.OrderId == id)
+                .Include(oi => oi.Product)
                 .ToListAsync();
 
             return MapOrderToDto(order, orderItems);
         }
 
-        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto dto, int userId, bool SaveShiping)
+        public async Task<IEnumerable<OrderDto>> GetOrdersBySellerIdAsync(int sellerId)
+        {
+            // Get all orders that include at least one product sold by this seller
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems!)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.OrderItems!.Any(oi => oi.Product != null && oi.Product.SellerId == sellerId))
+                .ToListAsync();
+
+            var result = orders.Select(order => MapOrderToDto(
+                order,
+                order.OrderItems!.Where(oi => oi.Product != null && oi.Product.SellerId == sellerId)
+            ));
+
+            return result;
+        }
+
+        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto dto, int userId, bool SaveShipping)
         {
             var trackingNumber = _deliveryservices.GetDeliveryServiceCode(dto.DeliveryServiceId);
+
             var order = new Models.Order
             {
                 UserId = userId,
@@ -107,14 +128,14 @@ namespace Team_Project_Meta.Services.Order
                 .Where(oi => oi.OrderId == order.Id)
                 .ToListAsync();
 
-            var cart = await _context.Carts
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart != null)
             {
                 _context.Carts.Remove(cart);
                 await _context.SaveChangesAsync();
             }
-            if (SaveShiping)
+
+            if (SaveShipping)
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user != null)
@@ -129,6 +150,15 @@ namespace Team_Project_Meta.Services.Order
                     await _context.SaveChangesAsync();
                 }
             }
+
+            await NotifyBuyerAsync(order, userId);
+            await NotifySellersAsync(order.Id);
+
+            return MapOrderToDto(order, createdOrderItems);
+        }
+
+        private async Task NotifyBuyerAsync(Models.Order order, int userId)
+        {
             var userEmail = (await _context.Users.FirstOrDefaultAsync(u => u.Id == userId))?.Email;
 
             if (!string.IsNullOrEmpty(userEmail))
@@ -137,10 +167,46 @@ namespace Team_Project_Meta.Services.Order
                 var body = $"<h2>Thank you for your order!</h2><p>Tracking Number: {order.TrackingNumber}</p>";
                 await _notificationService.SendEmailAsync(userEmail, subject, body);
             }
+        }
 
+        private async Task NotifySellersAsync(int orderId)
+        {
+            var orderItems = await _context.OrderItems
+                .Where(oi => oi.OrderId == orderId)
+                .ToListAsync();
 
+            var productIds = orderItems.Select(oi => oi.ProductId).ToList();
 
-            return MapOrderToDto(order, createdOrderItems);
+            var productsWithSellers = await _context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.ProductName, p.SellerId })
+                .ToListAsync();
+
+            var sellerIds = productsWithSellers.Select(p => p.SellerId).Distinct().ToList();
+
+            var sellers = await _context.Users
+                .Where(u => sellerIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.Email })
+                .ToListAsync();
+
+            foreach (var seller in sellers)
+            {
+                if (!string.IsNullOrEmpty(seller.Email))
+                {
+                    var sellerProductNames = productsWithSellers
+                        .Where(p => p.SellerId == seller.Id)
+                        .Select(p => p.ProductName);
+
+                    var subject = "Your product(s) were ordered!";
+                    var body = $"<h3>Congratulations!</h3><p>The following product(s) were ordered:</p><ul>";
+                    foreach (var name in sellerProductNames)
+                        body += $"<li>{name}</li>";
+
+                    body += "</ul>";
+
+                    await _notificationService.SendEmailAsync(seller.Email, subject, body);
+                }
+            }
         }
 
         public async Task<bool> DeleteOrderAsync(int id)
@@ -178,10 +244,15 @@ namespace Team_Project_Meta.Services.Order
                     OrderId = oi.OrderId,
                     ProductId = oi.ProductId,
                     Quantity = oi.Quantity,
-                    Price = oi.Price
+                    Price = oi.Price,
+                    ProductName = oi.Product?.ProductName,
+                    ImageBase64 = oi.Product?.ImageData != null
+                        ? Convert.ToBase64String(oi.Product.ImageData)
+                        : null
                 }).ToList() ?? new List<OrderItemDto>()
             };
         }
+
     }
 }
 

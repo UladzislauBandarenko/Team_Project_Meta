@@ -53,6 +53,57 @@ namespace Team_Project_Meta.Services.Products
             return products;
         }
 
+        public async Task<IEnumerable<ProductDetailsDto>> GetProductsBySellerIdAsync(int sellerId)
+        {
+            return await _context.Products
+                .Where(p => p.SellerId == sellerId)
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                .Select(p => new ProductDetailsDto
+                {
+                    Id = p.Id,
+                    ProductName = p.ProductName ?? "",
+                    ProductDescription = p.ProductDescription ?? "",
+                    Price = p.Price ?? 0,
+                    CategoryName = p.Category.CategorieName,
+                    StockQuantity = p.StockQuantity ?? 0,
+                    AverageRating = p.AverageRating,
+                    ReviewCount = p.ReviewCount,
+                    SellerName = p.Seller != null ? $"{p.Seller.FirstName} {p.Seller.LastName}" : "Unknown",
+                    ImageBase64 = p.ImageData != null ? Convert.ToBase64String(p.ImageData) : null
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProductListItemDto>> GetTopBestsellingProductsAsync(int count = 8)
+        {
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.StockQuantity > 0)
+                .Select(p => new ProductListItemDto
+                {
+                    Id = p.Id,
+                    ProductName = p.ProductName ?? "",
+                    Price = p.Price ?? 0,
+                    CategoryName = p.Category.CategorieName,
+                    StockQuantity = p.StockQuantity ?? 0,
+                    ImageBase64 = p.ImageData != null ? Convert.ToBase64String(p.ImageData) : null,
+                    // From Reviews table
+                    AverageRating = _context.Reviews
+                        .Where(r => r.ProductId == p.Id && r.Rating.HasValue)
+                        .Select(r => (decimal?)r.Rating)
+                        .Average() ?? 0,
+                    ReviewCount = _context.Reviews
+                        .Count(r => r.ProductId == p.Id)
+                })
+                .OrderByDescending(p => p.AverageRating)
+                .ThenByDescending(p => p.ReviewCount)
+                .Take(count)
+                .ToListAsync();
+
+            return products;
+        }
+
         public async Task<ProductDetailsDto?> GetProductByIdAsync(int id)
         {
             var product = await _context.Products
@@ -89,7 +140,6 @@ namespace Team_Project_Meta.Services.Products
 
         public async Task<int> CreateProductAsync(ProductCreateDto dto, int userId, string role, byte[]? imageData)
         {
-            var sellerId = role == "seller" ? userId : (dto.SellerId ?? userId);
 
             var product = new Product
             {
@@ -98,7 +148,7 @@ namespace Team_Project_Meta.Services.Products
                 Price = dto.Price,
                 CategoryId = dto.CategoryId,
                 StockQuantity = dto.StockQuantity,
-                SellerId = sellerId,
+                SellerId = userId,
                 ImageData = imageData
             };
 

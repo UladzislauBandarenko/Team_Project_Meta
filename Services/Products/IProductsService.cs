@@ -13,5 +13,7 @@ namespace Team_Project_Meta.Services.Products
         Task<int> CreateProductAsync(ProductCreateDto dto, int userId, string role, byte[]? imageData);
         //Task UploadProductImageAsync(int id, IFormFile imageFile);
         Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto, int userId, string role, byte[]? imageData);
+        Task<IEnumerable<ProductDetailsDto>> GetProductsBySellerIdAsync(int sellerId);
+        Task<IEnumerable<ProductListItemDto>> GetTopBestsellingProductsAsync(int count = 8);
     }
 }

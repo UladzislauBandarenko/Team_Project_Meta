@@ -13,5 +13,7 @@ namespace Team_Project_Meta.Services.Users
         Task<AuthResponseDto?> RefreshTokenAsync(string refreshToken);
         Task<bool> RequestPasswordResetAsync(string email);
         Task<bool> ResetPasswordWithCodeAsync(string email, string code, string newPassword);
+        Task<AuthResponseDto?> RegisterSellerAsync(SellerRegisterDto dto);
+        Task<bool> PromoteUserAsync(PromoteUserDto dto);
     }
 }
