@@ -44,7 +44,7 @@ namespace Team_Project_Meta.Controllers
 
         // GET api/reviews/product/{productId}
         [HttpGet("product/{productId}")]
-        [AllowAnonymous]  // allow public read access, remove if auth required
+        [AllowAnonymous]  // allow public read access
         public async Task<IActionResult> GetReviewsByProductId(int productId)
         {
             var reviews = await _reviewService.GetReviewsByProductIdAsync(productId);
@@ -56,7 +56,6 @@ namespace Team_Project_Meta.Controllers
         [HttpDelete("{reviewId}")]
         public async Task<IActionResult> DeleteReview(int reviewId)
         {
-            // Optional: check user is owner or admin here
 
             var success = await _reviewService.DeleteReviewAsync(reviewId);
             if (!success)
