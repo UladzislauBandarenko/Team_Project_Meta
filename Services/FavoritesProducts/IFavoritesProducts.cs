@@ -6,8 +6,6 @@ namespace Team_Project_Meta.Services.FavoritesProducts
     {
         Task<IEnumerable<FavoritesProductDto>> GetAllAsync(); // для админа
         Task<IEnumerable<FavoritesProductDto>> GetByUserIdAsync(int userId);
-
-        // Метод принимает userId и productId отдельно
         Task<FavoritesProductDto?> AddAsync(int userId, int productId);
 
         // Delete учитывает userId для проверки прав удаления
