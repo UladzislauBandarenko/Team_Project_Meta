@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { setCredentials } from "../../redux/auth/authSlice"
 import { useLoginMutation } from "../../redux/auth/api"
@@ -24,6 +24,7 @@ interface FormErrors {
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useDispatch()
 
   const [login] = useLoginMutation()
@@ -35,6 +36,16 @@ export const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({})
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
+
+  useEffect(() => {
+    // Check for success message from password reset
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message)
+      // Clear the state to prevent showing the message on refresh
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -99,6 +110,10 @@ export const LoginPage: React.FC = () => {
     }
   }
 
+  const handleForgotPassword = () => {
+    navigate("/forgot-password")
+  }
+
   return (
     <div className="login-page">
       <div className="login-page__container">
@@ -107,6 +122,8 @@ export const LoginPage: React.FC = () => {
             <h1 className="login-page__title">Sign In</h1>
             <p className="login-page__subtitle">Welcome back! Please enter your details</p>
           </div>
+
+          {successMessage && <div className="login-page__success">{successMessage}</div>}
 
           {errors.general && <div className="login-page__error">{errors.general}</div>}
 
@@ -166,11 +183,7 @@ export const LoginPage: React.FC = () => {
                 />
                 <span className="checkbox-text">Remember me</span>
               </label>
-              <button
-                type="button"
-                className="forgot-password-link"
-                onClick={() => console.log("Forgot password clicked")}
-              >
+              <button type="button" className="forgot-password-link" onClick={handleForgotPassword}>
                 Forgot password?
               </button>
             </div>
@@ -181,7 +194,7 @@ export const LoginPage: React.FC = () => {
           </form>
 
           <div className="login-page__footer">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link to="/signup" className="login-page__signup-link">
               Create Account
             </Link>

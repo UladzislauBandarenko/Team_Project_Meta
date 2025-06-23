@@ -9,6 +9,9 @@ import HelpSheltersPage from "../Pages/HelpSheltersPage/HelpSheltersPage"
 import LoginPage from "../Pages/LoginPage/LoginPage"
 import SignupPage from "../Pages/SignupPage/SignupPage"
 import ProfilePage from "../Pages/ProfilePage/ProfilePage"
+import ForgotPasswordPage from "../Pages/ForgotPasswordPage/ForgotPasswordPage"
+import VerifyCodePage from "../Pages/VerifyCodePage/VerifyCodePage"
+import ResetPasswordPage from "../Pages/ResetPasswordPage/ResetPasswordPage"
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -23,6 +26,9 @@ export const AppRoutes: React.FC = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/verify-code" element={<VerifyCodePage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/mission" element={<div>Mission Page</div>} />
       <Route path="/shelters" element={<div>Partner Shelters Page</div>} />
       <Route path="/contact" element={<div>Contact Page</div>} />
