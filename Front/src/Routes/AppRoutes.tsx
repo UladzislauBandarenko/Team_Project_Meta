@@ -22,6 +22,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/help-shelters" element={<HelpSheltersPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      {/* <Route path="/forgot-password" element={<ForgotPasswordPage />} /> */}
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/mission" element={<div>Mission Page</div>} />
       <Route path="/shelters" element={<div>Partner Shelters Page</div>} />
