@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -7,25 +9,6 @@ import shop from "../../assets/IMG-87.jpg"
 import make from "../../assets/IMG-100.jpg"
 import shelt from "../../assets/IMG-113.jpg"
 import track from "../../assets/IMG-126.jpg"
-
-interface ShelterRegistrationForm {
-  shelterName: string
-  taxId: string
-  contactPersonName: string
-  position: string
-  emailAddress: string
-  phoneNumber: string
-  shelterAddress: string
-  city: string
-  state: string
-  zipCode: string
-  shelterType: string
-  animalsAccepted: string[]
-  shelterCapacity: string
-  shelterDescription: string
-  currentNeeds: string
-  certificationAgreed: boolean
-}
 
 const successStories = [
   {
@@ -57,53 +40,43 @@ const successStories = [
   },
 ]
 
+const partnerShelters = [
+  {
+    id: 1,
+    name: "VGGN",
+    icon: "🐾",
+    description:
+      "Vilniaus gyvūnų globos namai provides shelter and care for abandoned animals in Vilnius, helping them find loving forever homes.",
+    website: "https://vggn.grinda.lt/ataskaitos/",
+  },
+  {
+    id: 2,
+    name: "Lesė",
+    icon: "❤️",
+    description:
+      "Lesė animal shelter has been rescuing and rehabilitating animals since 2008, focusing on education and responsible pet ownership.",
+    website: "https://lese.lt/apie-mus/",
+  },
+  {
+    id: 3,
+    name: "Beglobis",
+    icon: "🏠",
+    description:
+      "Beglobis provides shelter, medical care, and adoption services for homeless animals, working to reduce the stray animal population.",
+    website: "http://www.beglobis.com/",
+  },
+  {
+    id: 4,
+    name: "SOS Gyvūnai",
+    icon: "🐕",
+    description:
+      "SOS Gyvūnai focuses on emergency animal rescue, providing immediate care and rehabilitation for animals in crisis situations.",
+    website: "https://sos-gyvunai.lt/",
+  },
+]
+
 export const HelpSheltersPage: React.FC = () => {
-  const [formData, setFormData] = useState<ShelterRegistrationForm>({
-    shelterName: "",
-    taxId: "",
-    contactPersonName: "",
-    position: "",
-    emailAddress: "",
-    phoneNumber: "",
-    shelterAddress: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    shelterType: "",
-    animalsAccepted: [],
-    shelterCapacity: "",
-    shelterDescription: "",
-    currentNeeds: "",
-    certificationAgreed: false,
-  })
-
   const [newsletterEmail, setNewsletterEmail] = useState("")
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
-
-    if (type === "checkbox") {
-      const { checked } = e.target as HTMLInputElement
-      if (name === "certificationAgreed") {
-        setFormData((prev) => ({ ...prev, [name]: checked }))
-      } else if (name === "animalsAccepted") {
-        setFormData((prev) => ({
-          ...prev,
-          animalsAccepted: checked
-            ? [...prev.animalsAccepted, value]
-            : prev.animalsAccepted.filter((animal) => animal !== value),
-        }))
-      }
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }))
-    }
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Shelter registration:", formData)
-    // Handle form submission
-  }
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,11 +100,7 @@ export const HelpSheltersPage: React.FC = () => {
             </Link>
           </div>
           <div className="hero__image">
-            <img
-              src={support}
-              alt="People with shelter animals"
-              className="hero__image-main"
-            />
+            <img src={support || "/placeholder.svg"} alt="People with shelter animals" className="hero__image-main" />
           </div>
         </div>
       </section>
@@ -169,7 +138,7 @@ export const HelpSheltersPage: React.FC = () => {
             <div className="step-card">
               <div className="step-card__number">1</div>
               <div className="step-card__image">
-                <img src={shop} alt="Shop Products" />
+                <img src={shop || "/placeholder.svg"} alt="Shop Products" />
               </div>
               <h3 className="step-card__title">Shop Products</h3>
               <p className="step-card__description">
@@ -180,7 +149,7 @@ export const HelpSheltersPage: React.FC = () => {
             <div className="step-card">
               <div className="step-card__number">2</div>
               <div className="step-card__image">
-                <img src={make} alt="Make a Purchase" />
+                <img src={make || "/placeholder.svg"} alt="Make a Purchase" />
               </div>
               <h3 className="step-card__title">Make a Purchase</h3>
               <p className="step-card__description">
@@ -192,7 +161,7 @@ export const HelpSheltersPage: React.FC = () => {
             <div className="step-card">
               <div className="step-card__number">3</div>
               <div className="step-card__image">
-                <img src={shelt} alt="Support Shelters" />
+                <img src={shelt || "/placeholder.svg"} alt="Support Shelters" />
               </div>
               <h3 className="step-card__title">Support Shelters</h3>
               <p className="step-card__description">
@@ -203,7 +172,7 @@ export const HelpSheltersPage: React.FC = () => {
             <div className="step-card">
               <div className="step-card__number">4</div>
               <div className="step-card__image">
-                <img src={track} alt="Track Impact" />
+                <img src={track || "/placeholder.svg"} alt="Track Impact" />
               </div>
               <h3 className="step-card__title">Track Impact</h3>
               <p className="step-card__description">
@@ -214,271 +183,35 @@ export const HelpSheltersPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Shelter Registration Section */}
-      <section className="shelter-registration">
-        <div className="shelter-registration__container">
-          <h2 className="shelter-registration__title">Shelter Registration</h2>
-          <p className="shelter-registration__subtitle">
-            Register your animal shelter to join our network and receive support from our community
+      {/* Partner Shelters Section */}
+      <section className="partner-shelters">
+        <div className="partner-shelters__container">
+          <h2 className="partner-shelters__title">Our Partner Shelters</h2>
+          <p className="partner-shelters__subtitle">
+            We're proud to work with these amazing animal shelters across Lithuania. Your purchases help support their
+            vital work.
           </p>
 
-          <form className="registration-form" onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="shelterName" className="form-label">
-                  Shelter Name *
-                </label>
-                <input
-                  type="text"
-                  id="shelterName"
-                  name="shelterName"
-                  value={formData.shelterName}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                />
+          <div className="shelters-grid">
+            {partnerShelters.map((shelter) => (
+              <div key={shelter.id} className="shelter-card">
+                <div className="shelter-card__header">
+                  <div className="shelter-card__icon">{shelter.icon}</div>
+                  <h3 className="shelter-card__name">{shelter.name}</h3>
+                </div>
+                <p className="shelter-card__description">{shelter.description}</p>
+                <a href={shelter.website} target="_blank" rel="noopener noreferrer" className="shelter-card__link">
+                  Visit Website ↗
+                </a>
               </div>
-              <div className="form-group">
-                <label htmlFor="taxId" className="form-label">
-                  Tax ID (EIN) *
-                </label>
-                <input
-                  type="text"
-                  id="taxId"
-                  name="taxId"
-                  value={formData.taxId}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                />
-              </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="contactPersonName" className="form-label">
-                  Contact Person Name *
-                </label>
-                <input
-                  type="text"
-                  id="contactPersonName"
-                  name="contactPersonName"
-                  value={formData.contactPersonName}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="position" className="form-label">
-                  Position *
-                </label>
-                <input
-                  type="text"
-                  id="position"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="emailAddress" className="form-label">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="emailAddress"
-                  name="emailAddress"
-                  value={formData.emailAddress}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="phoneNumber" className="form-label">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="shelterAddress" className="form-label">
-                Shelter Address *
-              </label>
-              <input
-                type="text"
-                id="shelterAddress"
-                name="shelterAddress"
-                value={formData.shelterAddress}
-                onChange={handleInputChange}
-                className="form-input"
-                placeholder="Street Address"
-                required
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="city" className="form-label">
-                  City
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="state" className="form-label">
-                  State
-                </label>
-                <input
-                  type="text"
-                  id="state"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="zipCode" className="form-label">
-                  ZIP Code
-                </label>
-                <input
-                  type="text"
-                  id="zipCode"
-                  name="zipCode"
-                  value={formData.zipCode}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="shelterType" className="form-label">
-                Shelter Type *
-              </label>
-              <select
-                id="shelterType"
-                name="shelterType"
-                value={formData.shelterType}
-                onChange={handleInputChange}
-                className="form-select"
-                required
-              >
-                <option value="">Select Shelter Type</option>
-                <option value="municipal">Municipal Shelter</option>
-                <option value="nonprofit">Non-Profit Shelter</option>
-                <option value="rescue">Rescue Organization</option>
-                <option value="sanctuary">Animal Sanctuary</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Animals Accepted *</label>
-              <div className="checkbox-grid">
-                {["Dogs", "Cats", "Birds", "Rabbits", "Reptiles", "Other"].map((animal) => (
-                  <label key={animal} className="checkbox-option">
-                    <input
-                      type="checkbox"
-                      name="animalsAccepted"
-                      value={animal.toLowerCase()}
-                      checked={formData.animalsAccepted.includes(animal.toLowerCase())}
-                      onChange={handleInputChange}
-                    />
-                    <span className="checkbox-option__text">{animal}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="shelterCapacity" className="form-label">
-                Shelter Capacity *
-              </label>
-              <input
-                type="number"
-                id="shelterCapacity"
-                name="shelterCapacity"
-                value={formData.shelterCapacity}
-                onChange={handleInputChange}
-                className="form-input"
-                placeholder="Maximum number of animals"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="shelterDescription" className="form-label">
-                Shelter Description *
-              </label>
-              <textarea
-                id="shelterDescription"
-                name="shelterDescription"
-                value={formData.shelterDescription}
-                onChange={handleInputChange}
-                className="form-textarea"
-                placeholder="Tell us about your shelter, mission, and the services you provide"
-                rows={4}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="currentNeeds" className="form-label">
-                Current Needs
-              </label>
-              <textarea
-                id="currentNeeds"
-                name="currentNeeds"
-                value={formData.currentNeeds}
-                onChange={handleInputChange}
-                className="form-textarea"
-                placeholder="Describe your shelter's current needs and how we can help"
-                rows={3}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="checkbox-option">
-                <input
-                  type="checkbox"
-                  name="certificationAgreed"
-                  checked={formData.certificationAgreed}
-                  onChange={handleInputChange}
-                  required
-                />
-                <span className="checkbox-option__text">
-                  I certify that all information provided is accurate and agree to the partnership terms and conditions
-                  *
-                </span>
-              </label>
-            </div>
-
-            <button type="submit" className="registration-form__submit">
-              Submit Registration
-            </button>
-          </form>
+          <div className="partner-shelters__footer">
+            <Link to="/contact" className="partner-shelters__register-btn">
+              Become a Partner Shelter
+            </Link>
+          </div>
         </div>
       </section>
 
