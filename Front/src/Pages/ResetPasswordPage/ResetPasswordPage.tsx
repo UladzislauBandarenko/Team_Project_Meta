@@ -42,8 +42,8 @@ export const ResetPasswordPage: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required"
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
+    } else if (formData.password.length !== 6) {
+      newErrors.password = "Password must be exactly 6 characters"
     }
 
     if (!formData.confirmPassword) {
@@ -128,7 +128,7 @@ export const ResetPasswordPage: React.FC = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="Enter new password"
+                  placeholder="Enter 6-character password"
                   className={`form-input ${errors.password ? "error" : ""}`}
                   disabled={isLoading}
                 />

@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
@@ -197,6 +195,11 @@ export const LoginPage: React.FC = () => {
             Don't have an account?{" "}
             <Link to="/signup" className="login-page__signup-link">
               Create Account
+            </Link>
+            <br />
+            Want to be a Seller?{" "}
+            <Link to="/seller-signup" className="login-page__signup-link">
+              Create Seller Account
             </Link>
           </div>
         </div>

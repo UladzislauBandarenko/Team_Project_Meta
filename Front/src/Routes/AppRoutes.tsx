@@ -8,10 +8,14 @@ import WishlistPage from "../Pages/WishlistPage/WishlistPage"
 import HelpSheltersPage from "../Pages/HelpSheltersPage/HelpSheltersPage"
 import LoginPage from "../Pages/LoginPage/LoginPage"
 import SignupPage from "../Pages/SignupPage/SignupPage"
+import SellerSignupPage from "../Pages/SellerSignupPage/SellerSignupPage"
 import ProfilePage from "../Pages/ProfilePage/ProfilePage"
 import ForgotPasswordPage from "../Pages/ForgotPasswordPage/ForgotPasswordPage"
 import VerifyCodePage from "../Pages/VerifyCodePage/VerifyCodePage"
 import ResetPasswordPage from "../Pages/ResetPasswordPage/ResetPasswordPage"
+import AdminProfile from "../Pages/AdminProfile/AdminProfile"
+import SellerProfile from "../Pages/SellerProfile/SellerProfile"
+
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -24,7 +28,10 @@ export const AppRoutes: React.FC = () => {
       <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/help-shelters" element={<HelpSheltersPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/admin" element={<AdminProfile />} />
+      <Route path="/seller/dashboard" element={<SellerProfile />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/seller-signup" element={<SellerSignupPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />

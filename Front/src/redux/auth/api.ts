@@ -1,5 +1,5 @@
 ﻿import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { RegisterRequest, LoginRequest, AuthResponse, User } from "./types"
+import type { RegisterRequest, SellerRegisterRequest, LoginRequest, AuthResponse, User } from "./types"
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -14,20 +14,27 @@ export const authApi = createApi({
   }),
   tagTypes: ["Auth", "User"],
   endpoints: (builder) => ({
-      register: builder.mutation<AuthResponse, RegisterRequest>({
-          query: (data) => ({
-              url: "register",
-              method: "POST",
-              body: data,
-          }),
+    register: builder.mutation<AuthResponse, RegisterRequest>({
+      query: (data) => ({
+        url: "register",
+        method: "POST",
+        body: data,
       }),
-      login: builder.mutation<AuthResponse, LoginRequest>({
-          query: (creds) => ({
-              url: "login",
-              method: "POST",
-              body: creds,
-          }),
+    }),
+    registerSeller: builder.mutation<AuthResponse, SellerRegisterRequest>({
+      query: (data) => ({
+        url: "register-seller",
+        method: "POST",
+        body: data,
       }),
+    }),
+    login: builder.mutation<AuthResponse, LoginRequest>({
+      query: (creds) => ({
+        url: "login",
+        method: "POST",
+        body: creds,
+      }),
+    }),
     getCurrentUser: builder.query<User, void>({
       query: () => ({ url: "me", method: "GET" }),
       providesTags: ["User"],
@@ -35,4 +42,4 @@ export const authApi = createApi({
   }),
 })
 
-export const { useRegisterMutation, useLoginMutation, useGetCurrentUserQuery } = authApi
+export const { useRegisterMutation, useRegisterSellerMutation, useLoginMutation, useGetCurrentUserQuery } = authApi

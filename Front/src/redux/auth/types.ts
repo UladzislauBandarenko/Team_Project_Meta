@@ -5,25 +5,39 @@ export interface RegisterRequest {
   lastName: string
 }
 
+export interface SellerRegisterRequest {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  address: string
+  city: string
+  postalCode: string
+  country: string
+  phoneNumber: string
+  apartmentNumber: string
+}
+
 export interface LoginRequest {
   email: string
   password: string
 }
 
 export interface AuthResponse {
-    token: string
-    user: User
+  token: string
+  user: User
 }
 
 export interface User {
-    id: number
-    email: string
-    firstName: string
-    lastName: string
-    address?: string
-    city?: string
-    postalCode?: string
-    country?: string
-    phoneNumber?: string
-    role: string
+  id: number
+  email: string
+  firstName: string
+  lastName: string
+  address?: string
+  city?: string
+  postalCode?: string
+  country?: string
+  phoneNumber?: string
+  apartmentNumber?: string
+  role: string
 }
