@@ -146,8 +146,10 @@ const SellerProfile: React.FC = () => {
     price: 0,
     stock: 0,
     description: "",
-    image: "",
+    imageFile: null as File | null,
   })
+
+  const [imagePreview, setImagePreview] = useState<string>("")
 
   useEffect(() => {
     if (!user || user.role !== "seller") {
@@ -160,13 +162,27 @@ const SellerProfile: React.FC = () => {
     navigate("/")
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setNewProduct({ ...newProduct, imageFile: file })
+
+      // Create preview URL
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleAddProduct = () => {
     if (newProduct.name && newProduct.price > 0) {
       const product: Product = {
         id: Date.now(),
         ...newProduct,
         sellerId: user?.id || 1,
-        image: newProduct.image || "/placeholder.svg?height=60&width=60",
+        image: imagePreview || "/placeholder.svg?height=60&width=60",
       }
       setProducts([...products, product])
       setNewProduct({
@@ -175,8 +191,9 @@ const SellerProfile: React.FC = () => {
         price: 0,
         stock: 0,
         description: "",
-        image: "",
+        imageFile: null,
       })
+      setImagePreview("")
       setShowAddProduct(false)
     }
   }
@@ -189,14 +206,25 @@ const SellerProfile: React.FC = () => {
       price: product.price,
       stock: product.stock,
       description: product.description,
-      image: product.image,
+      imageFile: null,
     })
+    setImagePreview(product.image)
     setShowAddProduct(true)
   }
 
   const handleUpdateProduct = () => {
     if (editingProduct && newProduct.name && newProduct.price > 0) {
-      setProducts(products.map((p) => (p.id === editingProduct.id ? { ...editingProduct, ...newProduct } : p)))
+      setProducts(
+        products.map((p) =>
+          p.id === editingProduct.id
+            ? {
+                ...editingProduct,
+                ...newProduct,
+                image: imagePreview || editingProduct.image,
+              }
+            : p,
+        ),
+      )
       setEditingProduct(null)
       setNewProduct({
         name: "",
@@ -204,8 +232,9 @@ const SellerProfile: React.FC = () => {
         price: 0,
         stock: 0,
         description: "",
-        image: "",
+        imageFile: null,
       })
+      setImagePreview("")
       setShowAddProduct(false)
     }
   }
@@ -270,7 +299,7 @@ const SellerProfile: React.FC = () => {
             {showUserDropdown && (
               <div className="user-dropdown__menu">
                 <button onClick={() => setActiveTab("profile")}>My Profile</button>
-                <button onClick={handleLogout}>Log Out</button>
+                <button onClick={handleLogout}>Logout</button>
               </div>
             )}
           </div>
@@ -492,8 +521,9 @@ const SellerProfile: React.FC = () => {
                     price: 0,
                     stock: 0,
                     description: "",
-                    image: "",
+                    imageFile: null,
                   })
+                  setImagePreview("")
                 }}
               >
                 ✕
@@ -501,20 +531,22 @@ const SellerProfile: React.FC = () => {
             </div>
             <div className="modal-body">
               <div className="form-group">
-                <label>Product Name</label>
+                <label>Product Name *</label>
                 <input
                   type="text"
                   value={newProduct.name}
                   onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  placeholder="Enter product name"
+                  placeholder=""
                 />
               </div>
+
               <div className="form-group">
-                <label>Category</label>
+                <label>Category *</label>
                 <select
                   value={newProduct.category}
                   onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                 >
+                  <option value="">Select a category</option>
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
@@ -522,58 +554,82 @@ const SellerProfile: React.FC = () => {
                   ))}
                 </select>
               </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price (€)</label>
+                  <label>Price (€) *</label>
                   <input
                     type="number"
-                    value={newProduct.price}
+                    value={newProduct.price || ""}
                     onChange={(e) => setNewProduct({ ...newProduct, price: Number.parseFloat(e.target.value) || 0 })}
-                    placeholder="0.00"
+                    placeholder=""
                     step="0.01"
                   />
                 </div>
                 <div className="form-group">
-                  <label>Stock</label>
+                  <label>Stock Quantity *</label>
                   <input
                     type="number"
-                    value={newProduct.stock}
+                    value={newProduct.stock || ""}
                     onChange={(e) => setNewProduct({ ...newProduct, stock: Number.parseInt(e.target.value) || 0 })}
-                    placeholder="0"
+                    placeholder=""
                   />
                 </div>
               </div>
+
               <div className="form-group">
-                <label>Description</label>
+                <label>Product Image *</label>
+                <div className="image-upload-container">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="image-upload-input"
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload" className="image-upload-label">
+                    <div className="upload-icon">📤</div>
+                    <span>{newProduct.imageFile ? newProduct.imageFile.name : "Choose image file"}</span>
+                  </label>
+                  {imagePreview && (
+                    <div className="image-preview">
+                      <img src={imagePreview || "/placeholder.svg"} alt="Preview" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Product Description *</label>
                 <textarea
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                   placeholder="Enter product description"
-                  rows={3}
-                />
-              </div>
-              <div className="form-group">
-                <label>Image URL</label>
-                <input
-                  type="text"
-                  value={newProduct.image}
-                  onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                  placeholder="Enter image URL"
+                  rows={4}
                 />
               </div>
             </div>
             <div className="modal-footer">
               <button
-                className="btn btn--secondary"
+                className="btn btn--cancel"
                 onClick={() => {
                   setShowAddProduct(false)
                   setEditingProduct(null)
+                  setNewProduct({
+                    name: "",
+                    category: "Dog Products",
+                    price: 0,
+                    stock: 0,
+                    description: "",
+                    imageFile: null,
+                  })
+                  setImagePreview("")
                 }}
               >
                 Cancel
               </button>
-              <button className="btn btn--primary" onClick={editingProduct ? handleUpdateProduct : handleAddProduct}>
-                {editingProduct ? "Update Product" : "Add Product"}
+              <button className="btn btn--save" onClick={editingProduct ? handleUpdateProduct : handleAddProduct}>
+                Save Product
               </button>
             </div>
           </div>
