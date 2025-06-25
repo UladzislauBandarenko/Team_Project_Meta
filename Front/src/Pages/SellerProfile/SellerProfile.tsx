@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { clearCredentials } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./SellerProfile.scss"
@@ -28,6 +28,17 @@ interface Order {
   status: string
   orderDate: string
   totalAmount: number
+  customerEmail?: string
+  customerPhone?: string
+  shippingAddress?: string
+  shippingCompany?: string
+  trackingNumber?: string
+  orderItems?: Array<{
+    name: string
+    price: number
+    quantity: number
+    image: string
+  }>
 }
 
 // Mock data for demonstration
@@ -86,34 +97,102 @@ const mockProducts: Product[] = [
 
 const mockOrders: Order[] = [
   {
-    id: "ORD-001",
+    id: "ORD-7829",
     productName: "Premium Dog Food",
-    quantity: 2,
-    price: 39.99,
-    customerName: "John Smith",
+    quantity: 3,
+    price: 41.66,
+    customerName: "Emilija Kazlauskienė",
     status: "Processing",
-    orderDate: "2025-06-20",
-    totalAmount: 79.98,
+    orderDate: "16.06.2025",
+    totalAmount: 189.8,
+    customerEmail: "emilija.kazlauskiene@gmail.com",
+    customerPhone: "+370 612 34567",
+    shippingAddress: "Gedimino pr. 15-23, Vilnius 01103, Lithuania",
+    shippingCompany: "DPD Lietuva",
+    trackingNumber: "DPD7829456123",
+    orderItems: [
+      { name: "Premium Dog Food", price: 39.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Interactive Cat Toy", price: 24.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Orthopedic Dog Bed", price: 59.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+    ],
   },
   {
-    id: "ORD-002",
+    id: "ORD-7830",
     productName: "Interactive Cat Toy",
-    quantity: 1,
-    price: 24.99,
-    customerName: "Sarah Johnson",
+    quantity: 2,
+    price: 79.99,
+    customerName: "Michał Kowalski",
     status: "Shipped",
-    orderDate: "2025-06-19",
-    totalAmount: 24.99,
+    orderDate: "15.06.2025",
+    totalAmount: 159.98,
+    customerEmail: "michal.kowalski@wp.pl",
+    customerPhone: "+48 601 234 567",
+    shippingAddress: "ul. Marszałkowska 84/92, 00-514 Warszawa, Poland",
+    shippingCompany: "InPost",
+    trackingNumber: "INP7830456789",
+    orderItems: [
+      { name: "Interactive Cat Toy", price: 24.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Cat Scratching Post", price: 34.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Premium Cat Food", price: 29.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
+    ],
   },
   {
-    id: "ORD-003",
+    id: "ORD-7831",
     productName: "Orthopedic Dog Bed",
     quantity: 1,
-    price: 59.99,
-    customerName: "Mike Wilson",
+    price: 159.98,
+    customerName: "Līga Bērziņa",
     status: "Delivered",
-    orderDate: "2025-06-18",
-    totalAmount: 59.99,
+    orderDate: "14.06.2025",
+    totalAmount: 159.98,
+    customerEmail: "liga.berzina@inbox.lv",
+    customerPhone: "+371 2612 3456",
+    shippingAddress: "Brīvības iela 72, Rīga, LV-1011, Latvia",
+    shippingCompany: "Omniva",
+    trackingNumber: "OMN7831567890",
+    orderItems: [
+      { name: "Orthopedic Dog Bed", price: 89.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Dog Leash Premium", price: 34.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Dog Treats", price: 19.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+    ],
+  },
+  {
+    id: "ORD-7832",
+    productName: "Automatic Pet Feeder",
+    quantity: 1,
+    price: 124.99,
+    customerName: "Kadri Tamm",
+    status: "Pending",
+    orderDate: "13.06.2025",
+    totalAmount: 124.99,
+    customerEmail: "kadri.tamm@gmail.com",
+    customerPhone: "+372 5123 4567",
+    shippingAddress: "Narva mnt 7d, 10117 Tallinn, Estonia",
+    shippingCompany: "Smartpost",
+    trackingNumber: "SMT7832678901",
+    orderItems: [
+      { name: "Automatic Pet Feeder", price: 79.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Pet Water Fountain", price: 44.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+    ],
+  },
+  {
+    id: "ORD-7833",
+    productName: "Cat Scratching Post",
+    quantity: 2,
+    price: 94.97,
+    customerName: "Andrius Petrauskas",
+    status: "Delivered",
+    orderDate: "12.06.2025",
+    totalAmount: 94.97,
+    customerEmail: "andrius.petrauskas@delfi.lt",
+    customerPhone: "+370 698 76543",
+    shippingAddress: "Savanorių pr. 284, Kaunas 50131, Lithuania",
+    shippingCompany: "LP Express",
+    trackingNumber: "LPE7833789012",
+    orderItems: [
+      { name: "Cat Scratching Post", price: 34.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
+      { name: "Cat Toys Set", price: 24.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
+    ],
   },
 ]
 
@@ -130,6 +209,7 @@ const SellerProfile: React.FC = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const user = useSelector((state: RootState) => state.auth.user)
+  const location = useLocation()
 
   const [activeTab, setActiveTab] = useState("products")
   const [products, setProducts] = useState<Product[]>(mockProducts)
@@ -151,11 +231,55 @@ const SellerProfile: React.FC = () => {
 
   const [imagePreview, setImagePreview] = useState<string>("")
 
+  const [orderFilter, setOrderFilter] = useState("All")
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const [showOrderDetails, setShowOrderDetails] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
   useEffect(() => {
     if (!user || user.role !== "seller") {
       navigate("/login")
     }
   }, [user, navigate])
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab)
+    }
+  }, [location.state])
+
+  // Filter and search orders
+  const filteredOrders = useMemo(() => {
+    let filtered = orders
+
+    // Apply status filter
+    if (orderFilter !== "All") {
+      filtered = filtered.filter((order) => order.status === orderFilter)
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.customerName.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    }
+
+    return filtered
+  }, [orders, orderFilter, searchQuery])
+
+  // Calculate order statistics
+  const orderStats = useMemo(() => {
+    const total = orders.length
+    const pending = orders.filter((order) => order.status === "Pending").length
+    const shipped = orders.filter((order) => order.status === "Shipped").length
+    const delivered = orders.filter((order) => order.status === "Delivered").length
+    const processing = orders.filter((order) => order.status === "Processing").length
+
+    return { total, pending, shipped, delivered, processing }
+  }, [orders])
 
   const handleLogout = () => {
     dispatch(clearCredentials())
@@ -253,11 +377,17 @@ const SellerProfile: React.FC = () => {
         return "processing"
       case "shipped":
         return "shipped"
+      case "pending":
+        return "pending"
       case "cancelled":
         return "cancelled"
       default:
-        return "processing"
+        return "pending"
     }
+  }
+
+  const handleViewOrderDetails = (order: Order) => {
+    navigate(`/seller/order/${order.id}`, { state: { order } })
   }
 
   // Pagination
@@ -415,31 +545,111 @@ const SellerProfile: React.FC = () => {
           {/* Orders Tab */}
           {activeTab === "orders" && (
             <div className="orders-section">
-              <h2>Recent Orders</h2>
-              <div className="orders-table">
-                <div className="table-header">
-                  <div className="table-col">Order ID</div>
-                  <div className="table-col">Product</div>
-                  <div className="table-col">Customer</div>
-                  <div className="table-col">Quantity</div>
-                  <div className="table-col">Total</div>
-                  <div className="table-col">Status</div>
-                  <div className="table-col">Date</div>
+              <div className="orders-stats">
+                <div className="stat-card">
+                  <div className="stat-icon">🛒</div>
+                  <div className="stat-content">
+                    <div className="stat-number">{orderStats.total}</div>
+                    <div className="stat-label">Total Orders</div>
+                  </div>
                 </div>
-                <div className="table-body">
-                  {orders.map((order) => (
-                    <div key={order.id} className="table-row">
-                      <div className="table-col">{order.id}</div>
-                      <div className="table-col">{order.productName}</div>
-                      <div className="table-col">{order.customerName}</div>
-                      <div className="table-col">{order.quantity}</div>
-                      <div className="table-col">€{order.totalAmount.toFixed(2)}</div>
-                      <div className="table-col">
-                        <span className={`status status--${getStatusColor(order.status)}`}>{order.status}</span>
+                <div className="stat-card">
+                  <div className="stat-icon pending">⏳</div>
+                  <div className="stat-content">
+                    <div className="stat-number">{orderStats.pending}</div>
+                    <div className="stat-label">Pending</div>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon shipped">🚚</div>
+                  <div className="stat-content">
+                    <div className="stat-number">{orderStats.shipped}</div>
+                    <div className="stat-label">Shipped</div>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon delivered">✅</div>
+                  <div className="stat-content">
+                    <div className="stat-number">{orderStats.delivered}</div>
+                    <div className="stat-label">Delivered</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="orders-content">
+                <div className="orders-header">
+                  <h2>Recent Orders</h2>
+                  <div className="order-filters">
+                    {["All", "Pending", "Processing", "Shipped", "Delivered"].map((filter) => (
+                      <button
+                        key={filter}
+                        className={`filter-btn ${orderFilter === filter ? "active" : ""}`}
+                        onClick={() => setOrderFilter(filter)}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="search-container">
+                  <div className="search-input">
+                    <span className="search-icon">🔍</span>
+                    <input
+                      type="text"
+                      placeholder="Search by order ID or customer name"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="orders-table">
+                  <div className="table-header">
+                    <div className="table-col">Order ID</div>
+                    <div className="table-col">Customer</div>
+                    <div className="table-col">Date</div>
+                    <div className="table-col">Items</div>
+                    <div className="table-col">Total</div>
+                    <div className="table-col">Status</div>
+                    <div className="table-col">Actions</div>
+                  </div>
+                  <div className="table-body">
+                    {filteredOrders.length > 0 ? (
+                      filteredOrders.map((order) => (
+                        <div key={order.id} className="table-row">
+                          <div className="table-col order-id">{order.id}</div>
+                          <div className="table-col">{order.customerName}</div>
+                          <div className="table-col">{order.orderDate}</div>
+                          <div className="table-col">{order.quantity} items</div>
+                          <div className="table-col">€{order.totalAmount.toFixed(2)}</div>
+                          <div className="table-col">
+                            <span className={`status-badge status-${order.status.toLowerCase()}`}>{order.status}</span>
+                          </div>
+                          <div className="table-col">
+                            <button className="view-details-btn" onClick={() => handleViewOrderDetails(order)}>
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-results">
+                        <p>No orders found matching your search criteria.</p>
                       </div>
-                      <div className="table-col">{order.orderDate}</div>
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                </div>
+
+                <div className="orders-pagination">
+                  <span className="pagination-info">
+                    Showing {filteredOrders.length} of {orders.length} orders
+                  </span>
+                  <div className="pagination-controls">
+                    <button disabled>Previous</button>
+                    <span className="page-number">1</span>
+                    <button disabled>Next</button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -15,7 +15,7 @@ import VerifyCodePage from "../Pages/VerifyCodePage/VerifyCodePage"
 import ResetPasswordPage from "../Pages/ResetPasswordPage/ResetPasswordPage"
 import AdminProfile from "../Pages/AdminProfile/AdminProfile"
 import SellerProfile from "../Pages/SellerProfile/SellerProfile"
-
+import OrderDetailsPage from "../Pages/SellerProfile/OrderDetailsPage"
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -30,6 +30,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/admin" element={<AdminProfile />} />
       <Route path="/seller/dashboard" element={<SellerProfile />} />
+      <Route path="/seller/order/:orderId" element={<OrderDetailsPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/seller-signup" element={<SellerSignupPage />} />
       <Route path="/profile" element={<ProfilePage />} />
