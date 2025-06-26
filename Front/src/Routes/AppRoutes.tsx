@@ -1,5 +1,7 @@
 import type React from "react"
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
+import { useSelector } from "react-redux"
+import type { RootState } from "../redux/store"
 import HomePage from "../Pages/HomePage/HomePage"
 import ShopPage from "../Pages/ShopPage/ShopPage"
 import CartPage from "../Pages/CartPage/CartPage"
@@ -17,26 +19,105 @@ import AdminProfile from "../Pages/AdminProfile/AdminProfile"
 import SellerProfile from "../Pages/SellerProfile/SellerProfile"
 import OrderDetailsPage from "../Pages/SellerProfile/OrderDetailsPage"
 
+// Protected Route Component for Sellers
+const ProtectedFromSellers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useSelector((state: RootState) => state.auth)
+
+  // If user is a seller, redirect to their dashboard
+  if (user?.role === "seller") {
+    return <Navigate to="/seller/dashboard" replace />
+  }
+
+  return <>{children}</>
+}
+
+// Seller Only Route Component
+const SellerOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  // If not a seller, redirect to home
+  if (user?.role !== "seller") {
+    return <Navigate to="/" replace />
+  }
+
+  return <>{children}</>
+}
+
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/shop/:category" element={<ShopPage />} />
-      <Route path="/cart" element={<CartPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
-      <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/help-shelters" element={<HelpSheltersPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/admin" element={<AdminProfile />} />
-      <Route path="/seller/dashboard" element={<SellerProfile />} />
-      <Route path="/seller/order/:orderId" element={<OrderDetailsPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/seller-signup" element={<SellerSignupPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+      {/* Routes that sellers cannot access */}
+      <Route
+        path="/cart"
+        element={
+          <ProtectedFromSellers>
+            <CartPage />
+          </ProtectedFromSellers>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedFromSellers>
+            <CheckoutPage />
+          </ProtectedFromSellers>
+        }
+      />
+      <Route
+        path="/wishlist"
+        element={
+          <ProtectedFromSellers>
+            <WishlistPage />
+          </ProtectedFromSellers>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedFromSellers>
+            <ProfilePage />
+          </ProtectedFromSellers>
+        }
+      />
+
+      {/* Admin routes */}
+      <Route path="/admin" element={<AdminProfile />} />
+
+      {/* Seller-only routes */}
+      <Route
+        path="/seller/dashboard"
+        element={
+          <SellerOnlyRoute>
+            <SellerProfile />
+          </SellerOnlyRoute>
+        }
+      />
+      <Route
+        path="/seller/order/:orderId"
+        element={
+          <SellerOnlyRoute>
+            <OrderDetailsPage />
+          </SellerOnlyRoute>
+        }
+      />
+
+      {/* Static pages */}
       <Route path="/mission" element={<div>Mission Page</div>} />
       <Route path="/shelters" element={<div>Partner Shelters Page</div>} />
       <Route path="/contact" element={<div>Contact Page</div>} />

@@ -97,7 +97,14 @@ export const LoginPage: React.FC = () => {
         }),
       )
 
-      navigate("/")
+      // Redirect based on user role
+      if (response.user.role === "seller") {
+        navigate("/seller/dashboard")
+      } else if (response.user.role === "admin") {
+        navigate("/admin")
+      } else {
+        navigate("/")
+      }
     } catch (error: any) {
       console.error("Login failed:", error)
       setErrors({
