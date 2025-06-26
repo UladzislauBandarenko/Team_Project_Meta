@@ -1,10 +1,9 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
 import { clearCredentials } from "../../redux/auth/authSlice"
 import "./AdminProfile.scss"
+import UsersPage from "./UsersPage"
 
 interface Category {
   id: number
@@ -350,16 +349,7 @@ const AdminProfile: React.FC = () => {
           </div>
         )
       case "users":
-        return (
-          <div className="admin-section">
-            <div className="admin-section__header">
-              <h2>Users Management</h2>
-            </div>
-            <div className="admin-section__content">
-              <p>Users management functionality will be implemented here.</p>
-            </div>
-          </div>
-        )
+        return <UsersPage />
       default:
         return renderDashboard()
     }
