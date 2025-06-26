@@ -19,5 +19,8 @@ namespace Team_Project_Meta.DTOs.Order
         public List<OrderItemDto>? OrderItems { get; set; } = new();
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
+
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
     }
 }
