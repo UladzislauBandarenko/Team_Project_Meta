@@ -11,6 +11,22 @@ interface Category {
   name: string
 }
 
+interface Product {
+  id: number
+  name: string
+  category: string
+  price: number
+  reviews: Review[]
+}
+
+interface Review {
+  id: number
+  customerName: string
+  rating: number
+  date: string
+  comment: string
+}
+
 interface AdminStats {
   totalSales: number
   platformProfit: number
@@ -31,9 +47,89 @@ const AdminProfile: React.FC = () => {
     { id: 5, name: "Small Pets Products" },
     { id: 6, name: "Reptiles Products" },
   ])
+  const [products, setProducts] = useState<Product[]>([
+    {
+      id: 1,
+      name: "Premium Dog Food",
+      category: "Dogs",
+      price: 49.99,
+      reviews: [
+        {
+          id: 1,
+          customerName: "John D.",
+          rating: 5,
+          date: "2025-06-25",
+          comment: "Great product! Exactly what I needed.",
+        },
+        { id: 2, customerName: "Sarah M.", rating: 4, date: "2025-06-24", comment: "Good quality but a bit pricey." },
+        {
+          id: 3,
+          customerName: "Mike R.",
+          rating: 3,
+          date: "2025-06-23",
+          comment: "Average product, meets basic needs.",
+        },
+      ],
+    },
+    {
+      id: 2,
+      name: "Luxury Cat Bed",
+      category: "Cats",
+      price: 79.99,
+      reviews: [
+        {
+          id: 4,
+          customerName: "Emma L.",
+          rating: 5,
+          date: "2025-06-24",
+          comment: "My cat loves it! Very comfortable.",
+        },
+        { id: 5, customerName: "David K.", rating: 4, date: "2025-06-23", comment: "Good quality, fast delivery." },
+      ],
+    },
+    {
+      id: 3,
+      name: "Bird Cage Deluxe",
+      category: "Birds",
+      price: 129.99,
+      reviews: [
+        { id: 6, customerName: "Lisa P.", rating: 5, date: "2025-06-22", comment: "Perfect size for my parrots!" },
+      ],
+    },
+    {
+      id: 4,
+      name: "Aquarium Filter System",
+      category: "Fish",
+      price: 89.99,
+      reviews: [
+        { id: 7, customerName: "Tom W.", rating: 4, date: "2025-06-21", comment: "Works well, keeps water clean." },
+        { id: 8, customerName: "Anna S.", rating: 5, date: "2025-06-20", comment: "Excellent filtration system!" },
+      ],
+    },
+    {
+      id: 5,
+      name: "Hamster Exercise Wheel",
+      category: "Small Pets",
+      price: 24.99,
+      reviews: [
+        { id: 9, customerName: "Chris B.", rating: 3, date: "2025-06-19", comment: "Decent wheel, a bit noisy." },
+      ],
+    },
+    {
+      id: 6,
+      name: "Reptile Heat Lamp",
+      category: "Reptiles",
+      price: 34.99,
+      reviews: [
+        { id: 10, customerName: "Maria G.", rating: 4, date: "2025-06-18", comment: "Good heat output, reliable." },
+      ],
+    },
+  ])
   const [showAddModal, setShowAddModal] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
+  const [showReviewsModal, setShowReviewsModal] = useState<Product | null>(null)
+  const [reviewToDelete, setReviewToDelete] = useState<{ productId: number; reviewId: number } | null>(null)
 
   const stats: AdminStats = {
     totalSales: 45280,
@@ -48,7 +144,7 @@ const AdminProfile: React.FC = () => {
     return new Intl.NumberFormat("de-DE", {
       style: "currency",
       currency: "EUR",
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount)
   }
@@ -74,10 +170,37 @@ const AdminProfile: React.FC = () => {
     setShowDeleteConfirm(null)
   }
 
+  const handleDeleteReview = (productId: number, reviewId: number) => {
+    const updatedProducts = products.map((product) =>
+      product.id === productId
+        ? { ...product, reviews: product.reviews.filter((review) => review.id !== reviewId) }
+        : product,
+    )
+    setProducts(updatedProducts)
+
+    // Update the modal data if it's currently showing
+    if (showReviewsModal && showReviewsModal.id === productId) {
+      const updatedProduct = updatedProducts.find((p) => p.id === productId)
+      if (updatedProduct) {
+        setShowReviewsModal(updatedProduct)
+      }
+    }
+
+    setReviewToDelete(null)
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleAddCategory()
     }
+  }
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <span key={index} className={`star ${index < rating ? "star--filled" : "star--empty"}`}>
+        ⭐
+      </span>
+    ))
   }
 
   const renderDashboard = () => (
@@ -169,12 +292,52 @@ const AdminProfile: React.FC = () => {
     </div>
   )
 
+  const renderProducts = () => (
+    <div className="admin-products">
+      <div className="admin-products__header">
+        <h2>Products</h2>
+      </div>
+      <div className="admin-products__table">
+        <div className="admin-table admin-table--products">
+          <div className="admin-table__header">
+            <div className="admin-table__row admin-table__row--products">
+              <div className="admin-table__cell admin-table__cell--header">Product Name</div>
+              <div className="admin-table__cell admin-table__cell--header">Category</div>
+              <div className="admin-table__cell admin-table__cell--header">Price</div>
+              <div className="admin-table__cell admin-table__cell--header admin-table__cell--actions">Actions</div>
+            </div>
+          </div>
+          <div className="admin-table__body">
+            {products.map((product) => (
+              <div key={product.id} className="admin-table__row admin-table__row--products">
+                <div className="admin-table__cell">{product.name}</div>
+                <div className="admin-table__cell">{product.category}</div>
+                <div className="admin-table__cell">{formatEuro(product.price)}</div>
+                <div className="admin-table__cell admin-table__cell--actions">
+                  <button
+                    className="admin-action-btn admin-action-btn--view"
+                    onClick={() => setShowReviewsModal(product)}
+                    title="View reviews"
+                  >
+                    💬
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
         return renderDashboard()
       case "categories":
         return renderCategories()
+      case "products":
+        return renderProducts()
       case "orders":
         return (
           <div className="admin-section">
@@ -183,17 +346,6 @@ const AdminProfile: React.FC = () => {
             </div>
             <div className="admin-section__content">
               <p>Orders management functionality will be implemented here.</p>
-            </div>
-          </div>
-        )
-      case "products":
-        return (
-          <div className="admin-section">
-            <div className="admin-section__header">
-              <h2>Products Management</h2>
-            </div>
-            <div className="admin-section__content">
-              <p>Products management functionality will be implemented here.</p>
             </div>
           </div>
         )
@@ -321,7 +473,7 @@ const AdminProfile: React.FC = () => {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
+        {/* Delete Category Confirmation Modal */}
         {showDeleteConfirm && (
           <div className="admin-modal">
             <div className="admin-modal__backdrop" onClick={() => setShowDeleteConfirm(null)} />
@@ -345,6 +497,79 @@ const AdminProfile: React.FC = () => {
                   style={{ backgroundColor: "#dc3545" }}
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Product Reviews Modal */}
+        {showReviewsModal && (
+          <div className="admin-modal">
+            <div className="admin-modal__backdrop" onClick={() => setShowReviewsModal(null)} />
+            <div className="admin-modal__content admin-modal__content--reviews">
+              <div className="admin-modal__header">
+                <h3>Product Reviews</h3>
+                <button className="admin-modal__close" onClick={() => setShowReviewsModal(null)}>
+                  ×
+                </button>
+              </div>
+              <div className="admin-modal__body">
+                <div className="reviews-list">
+                  {showReviewsModal.reviews.map((review) => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-item__header">
+                        <div className="review-item__info">
+                          <span className="review-item__name">{review.customerName}</span>
+                          <div className="review-item__rating">{renderStars(review.rating)}</div>
+                          <span className="review-item__date">{review.date}</span>
+                        </div>
+                        <button
+                          className="admin-action-btn admin-action-btn--delete"
+                          onClick={() => setReviewToDelete({ productId: showReviewsModal.id, reviewId: review.id })}
+                          title="Delete review"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                      <div className="review-item__comment">{review.comment}</div>
+                    </div>
+                  ))}
+                  {showReviewsModal.reviews.length === 0 && (
+                    <div className="reviews-empty">
+                      <p>No reviews yet for this product.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Review Confirmation Modal */}
+        {reviewToDelete && (
+          <div className="admin-modal">
+            <div className="admin-modal__backdrop" onClick={() => setReviewToDelete(null)} />
+            <div className="admin-modal__content">
+              <div className="admin-modal__header">
+                <h3>Delete Review</h3>
+                <button className="admin-modal__close" onClick={() => setReviewToDelete(null)}>
+                  ×
+                </button>
+              </div>
+              <div className="admin-modal__body">
+                <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+              </div>
+              <div className="admin-modal__footer">
+                <button className="admin-btn admin-btn--secondary" onClick={() => setReviewToDelete(null)}>
+                  Cancel
+                </button>
+                <button
+                  className="admin-btn admin-btn--primary"
+                  onClick={() => handleDeleteReview(reviewToDelete.productId, reviewToDelete.reviewId)}
+                  style={{ backgroundColor: "#dc3545" }}
+                >
+                  Delete Review
                 </button>
               </div>
             </div>
