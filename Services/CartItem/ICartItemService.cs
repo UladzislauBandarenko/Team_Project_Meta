@@ -8,7 +8,6 @@ namespace Team_Project_Meta.Services.CartItem
         Task<CartItemDto> AddOrUpdateCartItemAsync(CreateCartItemDto dto, int userId);
         Task<bool> UpdateCartItemAsync(int cartId, int itemId, int userId, UpdateCartItemDto dto);
         Task<bool> DeleteCartItemAsync(int id, int userId);
-        Task<bool> IsCartOwnedByUserAsync(int cartId, int userId);
-        Task<bool> IsCartItemOwnedByUserAsync(int cartItemId, int userId);
+        Task<int> GetOrCreateUserCartIdAsync(int userId);
     }
 }
