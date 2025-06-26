@@ -3,9 +3,13 @@
 import type React from "react"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
 import { clearCredentials } from "../../redux/auth/authSlice"
 import "./AdminProfile.scss"
+
+interface Category {
+  id: number
+  name: string
+}
 
 interface AdminStats {
   totalSales: number
@@ -17,9 +21,19 @@ interface AdminStats {
 }
 
 const AdminProfile: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("dashboard")
   const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const [activeSection, setActiveSection] = useState("dashboard")
+  const [categories, setCategories] = useState<Category[]>([
+    { id: 1, name: "Dog Products" },
+    { id: 2, name: "Cat Products" },
+    { id: 3, name: "Fish Products" },
+    { id: 4, name: "Bird Products" },
+    { id: 5, name: "Small Pets Products" },
+    { id: 6, name: "Reptiles Products" },
+  ])
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
 
   const stats: AdminStats = {
     totalSales: 45280,
@@ -41,11 +55,29 @@ const AdminProfile: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(clearCredentials())
-    navigate("/login")
   }
 
-  const handleBackToMainSite = () => {
-    navigate("/")
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
+      const newCategory: Category = {
+        id: Math.max(...categories.map((c) => c.id)) + 1,
+        name: newCategoryName.trim(),
+      }
+      setCategories([...categories, newCategory])
+      setNewCategoryName("")
+      setShowAddModal(false)
+    }
+  }
+
+  const handleDeleteCategory = (id: number) => {
+    setCategories(categories.filter((c) => c.id !== id))
+    setShowDeleteConfirm(null)
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAddCategory()
+    }
   }
 
   const renderDashboard = () => (
@@ -53,7 +85,6 @@ const AdminProfile: React.FC = () => {
       <div className="admin-dashboard__header">
         <h2>Admin Dashboard</h2>
       </div>
-
       <div className="admin-dashboard__stats">
         <div className="admin-stat-card">
           <div className="admin-stat-card__icon admin-stat-card__icon--sales">💰</div>
@@ -62,7 +93,6 @@ const AdminProfile: React.FC = () => {
             <p className="admin-stat-card__value">{formatEuro(stats.totalSales)}</p>
           </div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__icon admin-stat-card__icon--profit">📈</div>
           <div className="admin-stat-card__content">
@@ -70,7 +100,6 @@ const AdminProfile: React.FC = () => {
             <p className="admin-stat-card__value">{formatEuro(stats.platformProfit)}</p>
           </div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__icon admin-stat-card__icon--order">🛒</div>
           <div className="admin-stat-card__content">
@@ -78,7 +107,6 @@ const AdminProfile: React.FC = () => {
             <p className="admin-stat-card__value">{formatEuro(stats.averageOrderValue)}</p>
           </div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__icon admin-stat-card__icon--charity">❤️</div>
           <div className="admin-stat-card__content">
@@ -86,7 +114,6 @@ const AdminProfile: React.FC = () => {
             <p className="admin-stat-card__value">{formatEuro(stats.charityDonations)}</p>
           </div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__icon admin-stat-card__icon--users">👥</div>
           <div className="admin-stat-card__content">
@@ -94,7 +121,6 @@ const AdminProfile: React.FC = () => {
             <p className="admin-stat-card__value">{stats.totalUsers.toLocaleString()}</p>
           </div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__icon admin-stat-card__icon--orders">📦</div>
           <div className="admin-stat-card__content">
@@ -107,61 +133,81 @@ const AdminProfile: React.FC = () => {
   )
 
   const renderCategories = () => (
-    <div className="admin-section">
-      <div className="admin-section__header">
-        <h2>Categories Management</h2>
+    <div className="admin-categories">
+      <div className="admin-categories__header">
+        <h2>Categories</h2>
+        <button className="admin-btn admin-btn--primary" onClick={() => setShowAddModal(true)}>
+          + Add Category
+        </button>
       </div>
-      <div className="admin-section__content">
-        <p>Manage product categories, add new categories, and organize the product catalog.</p>
-      </div>
-    </div>
-  )
-
-  const renderOrders = () => (
-    <div className="admin-section">
-      <div className="admin-section__header">
-        <h2>Orders Management</h2>
-      </div>
-      <div className="admin-section__content">
-        <p>View and manage all orders, track order status, and handle customer requests.</p>
-      </div>
-    </div>
-  )
-
-  const renderProducts = () => (
-    <div className="admin-section">
-      <div className="admin-section__header">
-        <h2>Products Management</h2>
-      </div>
-      <div className="admin-section__content">
-        <p>Manage all products, approve seller listings, and maintain product quality.</p>
-      </div>
-    </div>
-  )
-
-  const renderUsers = () => (
-    <div className="admin-section">
-      <div className="admin-section__header">
-        <h2>Users Management</h2>
-      </div>
-      <div className="admin-section__content">
-        <p>Manage user accounts, seller applications, and user permissions.</p>
+      <div className="admin-categories__table">
+        <div className="admin-table">
+          <div className="admin-table__header">
+            <div className="admin-table__row">
+              <div className="admin-table__cell admin-table__cell--header">Name</div>
+              <div className="admin-table__cell admin-table__cell--header admin-table__cell--actions">Action</div>
+            </div>
+          </div>
+          <div className="admin-table__body">
+            {categories.map((category) => (
+              <div key={category.id} className="admin-table__row">
+                <div className="admin-table__cell">{category.name}</div>
+                <div className="admin-table__cell admin-table__cell--actions">
+                  <button
+                    className="admin-action-btn admin-action-btn--delete"
+                    onClick={() => setShowDeleteConfirm(category.id)}
+                    title="Delete category"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
 
-  const renderContent = () => {
-    switch (activeTab) {
+  const renderSection = () => {
+    switch (activeSection) {
       case "dashboard":
         return renderDashboard()
       case "categories":
         return renderCategories()
       case "orders":
-        return renderOrders()
+        return (
+          <div className="admin-section">
+            <div className="admin-section__header">
+              <h2>Orders Management</h2>
+            </div>
+            <div className="admin-section__content">
+              <p>Orders management functionality will be implemented here.</p>
+            </div>
+          </div>
+        )
       case "products":
-        return renderProducts()
+        return (
+          <div className="admin-section">
+            <div className="admin-section__header">
+              <h2>Products Management</h2>
+            </div>
+            <div className="admin-section__content">
+              <p>Products management functionality will be implemented here.</p>
+            </div>
+          </div>
+        )
       case "users":
-        return renderUsers()
+        return (
+          <div className="admin-section">
+            <div className="admin-section__header">
+              <h2>Users Management</h2>
+            </div>
+            <div className="admin-section__content">
+              <p>Users management functionality will be implemented here.</p>
+            </div>
+          </div>
+        )
       default:
         return renderDashboard()
     }
@@ -170,59 +216,57 @@ const AdminProfile: React.FC = () => {
   return (
     <div className="admin-profile">
       <div className="admin-profile__container">
-        <div className="admin-header">
+        {/* Header */}
+        <header className="admin-header">
           <div className="admin-header__brand">
             <h1>PetCare Market</h1>
           </div>
           <div className="admin-header__title">
             <h2>Admin Panel</h2>
           </div>
-        </div>
+        </header>
 
+        {/* Content */}
         <div className="admin-content">
+          {/* Sidebar */}
           <aside className="admin-sidebar">
             <nav className="admin-sidebar__nav">
               <button
-                className={`admin-sidebar__item ${activeTab === "dashboard" ? "admin-sidebar__item--active" : ""}`}
-                onClick={() => setActiveTab("dashboard")}
+                className={`admin-sidebar__item ${activeSection === "dashboard" ? "admin-sidebar__item--active" : ""}`}
+                onClick={() => setActiveSection("dashboard")}
               >
                 <span className="admin-sidebar__icon">📊</span>
                 Dashboard
               </button>
-
               <button
-                className={`admin-sidebar__item ${activeTab === "categories" ? "admin-sidebar__item--active" : ""}`}
-                onClick={() => setActiveTab("categories")}
+                className={`admin-sidebar__item ${activeSection === "categories" ? "admin-sidebar__item--active" : ""}`}
+                onClick={() => setActiveSection("categories")}
               >
-                <span className="admin-sidebar__icon">🏷️</span>
+                <span className="admin-sidebar__icon">📁</span>
                 Categories
               </button>
-
               <button
-                className={`admin-sidebar__item ${activeTab === "orders" ? "admin-sidebar__item--active" : ""}`}
-                onClick={() => setActiveTab("orders")}
+                className={`admin-sidebar__item ${activeSection === "orders" ? "admin-sidebar__item--active" : ""}`}
+                onClick={() => setActiveSection("orders")}
               >
                 <span className="admin-sidebar__icon">🛒</span>
                 Orders
               </button>
-
               <button
-                className={`admin-sidebar__item ${activeTab === "products" ? "admin-sidebar__item--active" : ""}`}
-                onClick={() => setActiveTab("products")}
+                className={`admin-sidebar__item ${activeSection === "products" ? "admin-sidebar__item--active" : ""}`}
+                onClick={() => setActiveSection("products")}
               >
                 <span className="admin-sidebar__icon">📦</span>
                 Products
               </button>
-
               <button
-                className={`admin-sidebar__item ${activeTab === "users" ? "admin-sidebar__item--active" : ""}`}
-                onClick={() => setActiveTab("users")}
+                className={`admin-sidebar__item ${activeSection === "users" ? "admin-sidebar__item--active" : ""}`}
+                onClick={() => setActiveSection("users")}
               >
                 <span className="admin-sidebar__icon">👥</span>
                 Users
               </button>
             </nav>
-
             <div className="admin-sidebar__footer">
               <button className="admin-sidebar__logout" onClick={handleLogout}>
                 <span className="admin-sidebar__icon">🚪</span>
@@ -231,8 +275,81 @@ const AdminProfile: React.FC = () => {
             </div>
           </aside>
 
-          <main className="admin-main">{renderContent()}</main>
+          {/* Main Content */}
+          <main className="admin-main">{renderSection()}</main>
         </div>
+
+        {/* Add Category Modal */}
+        {showAddModal && (
+          <div className="admin-modal">
+            <div className="admin-modal__backdrop" onClick={() => setShowAddModal(false)} />
+            <div className="admin-modal__content">
+              <div className="admin-modal__header">
+                <h3>Add New Category</h3>
+                <button className="admin-modal__close" onClick={() => setShowAddModal(false)}>
+                  ×
+                </button>
+              </div>
+              <div className="admin-modal__body">
+                <div className="admin-form-group">
+                  <label htmlFor="categoryName">Category Name</label>
+                  <input
+                    id="categoryName"
+                    type="text"
+                    className="admin-input"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Enter category name"
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className="admin-modal__footer">
+                <button className="admin-btn admin-btn--secondary" onClick={() => setShowAddModal(false)}>
+                  Cancel
+                </button>
+                <button
+                  className="admin-btn admin-btn--primary"
+                  onClick={handleAddCategory}
+                  disabled={!newCategoryName.trim()}
+                >
+                  Add Category
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="admin-modal">
+            <div className="admin-modal__backdrop" onClick={() => setShowDeleteConfirm(null)} />
+            <div className="admin-modal__content">
+              <div className="admin-modal__header">
+                <h3>Confirm Delete</h3>
+                <button className="admin-modal__close" onClick={() => setShowDeleteConfirm(null)}>
+                  ×
+                </button>
+              </div>
+              <div className="admin-modal__body">
+                <p>Are you sure you want to delete this category? This action cannot be undone.</p>
+              </div>
+              <div className="admin-modal__footer">
+                <button className="admin-btn admin-btn--secondary" onClick={() => setShowDeleteConfirm(null)}>
+                  Cancel
+                </button>
+                <button
+                  className="admin-btn admin-btn--primary"
+                  onClick={() => handleDeleteCategory(showDeleteConfirm)}
+                  style={{ backgroundColor: "#dc3545" }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
