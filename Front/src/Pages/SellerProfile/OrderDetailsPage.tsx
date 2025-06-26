@@ -95,13 +95,6 @@ const OrderDetailsPage: React.FC = () => {
               <div className="card-value">{order.quantity}</div>
             </div>
           </div>
-          <div className="summary-card payment">
-            <div className="card-icon">💳</div>
-            <div className="card-content">
-              <div className="card-label">Payment</div>
-              <div className="card-value">Paid</div>
-            </div>
-          </div>
           <div className="summary-card shipping">
             <div className="card-icon">🚚</div>
             <div className="card-content">

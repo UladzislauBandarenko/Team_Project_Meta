@@ -7,6 +7,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import { clearCredentials } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./SellerProfile.scss"
+import AnalyticsPage from "./AnalyticsPage"
 
 interface Product {
   id: number
@@ -417,7 +418,7 @@ const SellerProfile: React.FC = () => {
             {activeTab === "products" && "My Products"}
             {activeTab === "orders" && "Orders"}
             {activeTab === "profile" && "My Profile"}
-            {activeTab === "analytics" && "Analytics"}
+            {activeTab === "analytics" && "Analytics Dashboard"}
           </h1>
         </div>
         <div className="seller-header__right">
@@ -429,7 +430,7 @@ const SellerProfile: React.FC = () => {
             {showUserDropdown && (
               <div className="user-dropdown__menu">
                 <button onClick={() => setActiveTab("profile")}>My Profile</button>
-                <button onClick={handleLogout}>Logout</button>
+                <button onClick={handleLogout}>Log Out</button>
               </div>
             )}
           </div>
@@ -635,7 +636,7 @@ const SellerProfile: React.FC = () => {
                       ))
                     ) : (
                       <div className="no-results">
-                        <p>No orders found matching your search criteria.</p>
+                        <p>No orders found matching your search criteria</p>
                       </div>
                     )}
                   </div>
@@ -658,59 +659,72 @@ const SellerProfile: React.FC = () => {
           {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="profile-section">
-              <h2>Seller Profile</h2>
-              <div className="profile-card">
-                <div className="profile-info">
-                  <h3>
-                    {user.firstName} {user.lastName}
-                  </h3>
-                  <p>Email: {user.email}</p>
-                  <p>Role: Seller</p>
-                  {user.address && <p>Address: {user.address}</p>}
-                  {user.city && <p>City: {user.city}</p>}
-                  {user.phoneNumber && <p>Phone: {user.phoneNumber}</p>}
+              <div className="profile-header">
+                <h2>Seller Profile</h2>
+              </div>
+
+              <div className="profile-form">
+                <div className="form-section">
+                  <h3>Basic Information</h3>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>First Name</label>
+                      <input type="text" value={user?.firstName || "John"} readOnly />
+                    </div>
+                    <div className="form-group">
+                      <label>Last Name</label>
+                      <input type="text" value={user?.lastName || "Smith"} readOnly />
+                    </div>
+                    <div className="form-group">
+                      <label>Phone Number</label>
+                      <input type="text" value={user?.phoneNumber || "(555) 123-4567"} readOnly />
+                    </div>
+                    <div className="form-group">
+                      <label>Email Address</label>
+                      <input type="email" value={user?.email || "john@pawsomeproducts.com"} readOnly />
+                    </div>
+                  </div>
                 </div>
-                <button className="edit-profile-btn">Edit Profile</button>
+
+                <div className="form-section">
+                  <h3>Store Information</h3>
+                  <div className="form-grid">
+                    <div className="form-group full-width">
+                      <label>Address</label>
+                      <input type="text" value={user?.address || "123 Pet Lane"} readOnly />
+                    </div>
+                    <div className="form-group full-width">
+                      <label>Apartment Number</label>
+                      <input type="text" value="Suite 101" readOnly />
+                    </div>
+                    <div className="form-group">
+                      <label>City</label>
+                      <input type="text" value={user?.city || "Furry City"} readOnly />
+                    </div>
+                    <div className="form-group">
+                      <label>Postal Code</label>
+                      <input type="text" value="PC 12345" readOnly />
+                    </div>
+                    <div className="form-group full-width">
+                      <label>Country</label>
+                      <input type="text" value="United States" readOnly />
+                    </div>
+                    <div className="form-group full-width">
+                      <label>Phone Number</label>
+                      <input type="text" value="(555) 987-6543" readOnly />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button className="btn btn--cancel">Cancel</button>
+                </div>
               </div>
             </div>
           )}
 
           {/* Analytics Tab */}
-          {activeTab === "analytics" && (
-            <div className="analytics-section">
-              <h2>Analytics Dashboard</h2>
-              <div className="analytics-grid">
-                <div className="analytics-card">
-                  <div className="analytics-card__icon">📦</div>
-                  <div className="analytics-card__content">
-                    <div className="analytics-card__number">{totalProducts}</div>
-                    <div className="analytics-card__label">Total Products</div>
-                  </div>
-                </div>
-                <div className="analytics-card">
-                  <div className="analytics-card__icon">🛒</div>
-                  <div className="analytics-card__content">
-                    <div className="analytics-card__number">{totalOrders}</div>
-                    <div className="analytics-card__label">Total Orders</div>
-                  </div>
-                </div>
-                <div className="analytics-card">
-                  <div className="analytics-card__icon">💰</div>
-                  <div className="analytics-card__content">
-                    <div className="analytics-card__number">€{totalRevenue.toFixed(2)}</div>
-                    <div className="analytics-card__label">Total Revenue</div>
-                  </div>
-                </div>
-                <div className="analytics-card">
-                  <div className="analytics-card__icon">⚠️</div>
-                  <div className="analytics-card__content">
-                    <div className="analytics-card__number">{lowStockProducts}</div>
-                    <div className="analytics-card__label">Low Stock Items</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === "analytics" && <AnalyticsPage />}
         </div>
       </div>
 
