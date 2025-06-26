@@ -24,6 +24,7 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
+  accessToken: string
   token: string
   user: User
 }
@@ -40,4 +41,5 @@ export interface User {
   phoneNumber?: string
   apartmentNumber?: string
   role: string
+  [key: string]: any 
 }

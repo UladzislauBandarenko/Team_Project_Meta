@@ -37,10 +37,8 @@ export const LoginPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState("")
 
   useEffect(() => {
-    // Check for success message from password reset
     if (location.state?.message) {
       setSuccessMessage(location.state.message)
-      // Clear the state to prevent showing the message on refresh
       window.history.replaceState({}, document.title)
     }
   }, [location])
@@ -97,14 +95,16 @@ export const LoginPage: React.FC = () => {
         }),
       )
 
-      // Redirect based on user role
-      if (response.user.role === "seller") {
-        navigate("/seller/dashboard")
-      } else if (response.user.role === "admin") {
-        navigate("/admin")
-      } else {
-        navigate("/")
-      }
+      const role = response.user.role
+
+if (role === "admin") {
+  navigate("/admin")
+} else if (role === "seller") {
+  navigate("/seller/dashboard")
+} else {
+  navigate("/")
+}
+
     } catch (error: any) {
       console.error("Login failed:", error)
       setErrors({
@@ -129,14 +129,11 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {successMessage && <div className="login-page__success">{successMessage}</div>}
-
           {errors.general && <div className="login-page__error">{errors.general}</div>}
 
           <form className="login-page__form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                Email
-              </label>
+              <label htmlFor="email" className="form-label">Email</label>
               <input
                 type="email"
                 id="email"
@@ -151,9 +148,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password" className="form-label">
-                Password
-              </label>
+              <label htmlFor="password" className="form-label">Password</label>
               <div className="password-input-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -202,11 +197,6 @@ export const LoginPage: React.FC = () => {
             Don't have an account?{" "}
             <Link to="/signup" className="login-page__signup-link">
               Create Account
-            </Link>
-            <br />
-            Want to be a Seller?{" "}
-            <Link to="/seller-signup" className="login-page__signup-link">
-              Create Seller Account
             </Link>
           </div>
         </div>
