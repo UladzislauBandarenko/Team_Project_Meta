@@ -125,19 +125,11 @@ export const HomePage: React.FC = () => {
   const dispatch = useDispatch()
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
   const [searchQuery, setSearchQuery] = useState("")
-  const [email, setEmail] = useState("")
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle search logic
     console.log("Searching for:", searchQuery)
-  }
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle newsletter subscription
-    console.log("Newsletter subscription:", email)
-    setEmail("")
   }
 
   const handleAddToCart = (product: any) => {
@@ -349,31 +341,6 @@ export const HomePage: React.FC = () => {
               Learn More
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Newsletter Section */}
-      <section className="newsletter">
-        <div className="newsletter__container">
-          <h2 className="newsletter__title">Join Our Pet-Loving Community</h2>
-          <p className="newsletter__subtitle">
-            Subscribe to our newsletter for exclusive deals, pet care tips, and updates on how your purchases are
-            helping animal shelters.
-          </p>
-
-          <form className="newsletter__form" onSubmit={handleNewsletterSubmit}>
-            <input
-              type="email"
-              placeholder="Your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="newsletter__input"
-              required
-            />
-            <button type="submit" className="newsletter__button">
-              Subscribe
-            </button>
-          </form>
         </div>
       </section>
     </div>
