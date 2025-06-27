@@ -12,8 +12,7 @@ interface RegisterRequest {
 }
 
 interface AuthResponse {
-  accessToken: string
-  refreshToken: string
+  token: string,
   user: {
     id: string
     email: string
@@ -60,8 +59,7 @@ export const localAuthService = {
 
         if (user) {
           const authResponse: AuthResponse = {
-            accessToken: generateToken(),
-            refreshToken: generateToken(),
+              token: generateToken(),
             user: {
               id: user.id,
               email: user.email,
@@ -107,8 +105,7 @@ export const localAuthService = {
         saveUsers(users)
 
         const authResponse: AuthResponse = {
-          accessToken: generateToken(),
-          refreshToken: generateToken(),
+            token: generateToken(),
           user: {
             id: newUser.id,
             email: newUser.email,

@@ -82,8 +82,7 @@ export const LoginPage: React.FC = () => {
             }).unwrap()
 
             dispatch(setCredentials({
-                accessToken: response.token,
-                refreshToken: "", // если он будет в ответе — добавить
+                token: response.token,
                 user: response.user,
             }))
 
