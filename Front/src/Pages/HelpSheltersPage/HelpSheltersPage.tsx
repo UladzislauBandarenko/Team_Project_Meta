@@ -16,8 +16,6 @@ const successStories = [
     description:
       "Max was found abandoned and malnourished. After 3 months of care and rehabilitation, he found his forever home with a loving family.",
     image: "/placeholder.svg?height=200&width=300",
-    supporters: 142,
-    shares: 23,
   },
   {
     id: 2,
@@ -25,8 +23,6 @@ const successStories = [
     description:
       "Luna needed emergency surgery after being hit by a car. Thanks to the emergency fund, she made a full recovery and is now thriving.",
     image: "/placeholder.svg?height=200&width=300",
-    supporters: 89,
-    shares: 15,
   },
   {
     id: 3,
@@ -34,8 +30,6 @@ const successStories = [
     description:
       "A litter of 8 puppies was rescued from an abandoned property. After foster care, all found loving homes through our network.",
     image: "/placeholder.svg?height=200&width=300",
-    supporters: 203,
-    shares: 45,
   },
 ]
 
@@ -126,50 +120,25 @@ export const HelpSheltersPage: React.FC = () => {
           </p>
 
           <div className="steps-grid">
-            <div className="step-card">
-              <div className="step-card__number">1</div>
-              <div className="step-card__image">
-                <img src={shop || "/placeholder.svg"} alt="Shop Products" />
+            {[shop, make, shelt, track].map((img, idx) => (
+              <div className="step-card" key={idx}>
+                <div className="step-card__number">{idx + 1}</div>
+                <div className="step-card__image">
+                  <img src={img} alt={`Step ${idx + 1}`} />
+                </div>
+                <h3 className="step-card__title">
+                  {["Shop Products", "Make a Purchase", "Support Shelters", "Track Impact"][idx]}
+                </h3>
+                <p className="step-card__description">
+                  {[
+                    "Browse our curated collection of high-quality pet supplies and accessories for your beloved pets.",
+                    "Complete your purchase knowing that a portion of every transaction goes directly to helping shelter animals.",
+                    "Your purchase helps provide essential supplies and care for animals in partner shelters.",
+                    "A portion of every purchase goes directly to supporting animals in need through our network.",
+                  ][idx]}
+                </p>
               </div>
-              <h3 className="step-card__title">Shop Products</h3>
-              <p className="step-card__description">
-                Browse our curated collection of high-quality pet supplies and accessories for your beloved pets.
-              </p>
-            </div>
-
-            <div className="step-card">
-              <div className="step-card__number">2</div>
-              <div className="step-card__image">
-                <img src={make || "/placeholder.svg"} alt="Make a Purchase" />
-              </div>
-              <h3 className="step-card__title">Make a Purchase</h3>
-              <p className="step-card__description">
-                Complete your purchase knowing that a portion of every transaction goes directly to helping shelter
-                animals.
-              </p>
-            </div>
-
-            <div className="step-card">
-              <div className="step-card__number">3</div>
-              <div className="step-card__image">
-                <img src={shelt || "/placeholder.svg"} alt="Support Shelters" />
-              </div>
-              <h3 className="step-card__title">Support Shelters</h3>
-              <p className="step-card__description">
-                Your purchase helps provide essential supplies and care for animals in partner shelters.
-              </p>
-            </div>
-
-            <div className="step-card">
-              <div className="step-card__number">4</div>
-              <div className="step-card__image">
-                <img src={track || "/placeholder.svg"} alt="Track Impact" />
-              </div>
-              <h3 className="step-card__title">Track Impact</h3>
-              <p className="step-card__description">
-                A portion of every purchase goes directly to supporting animals in need through our network.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -199,9 +168,10 @@ export const HelpSheltersPage: React.FC = () => {
           </div>
 
           <div className="partner-shelters__footer">
-            <Link to="/contact" className="partner-shelters__register-btn">
-              Become a Partner Shelter
-            </Link>
+            <p className="partner-shelters__email">
+              Interested in becoming a partner? Email us at{" "}
+              <a href="mailto:pet.shop.tpehu@gmail.com">pet.shop.tpehu@gmail.com</a>
+            </p>
           </div>
         </div>
       </section>
@@ -215,7 +185,7 @@ export const HelpSheltersPage: React.FC = () => {
           </p>
 
           <div className="stories-grid">
-            {successStories.map((story) => (
+            {successStories.slice(0, 3).map((story) => (
               <div key={story.id} className="story-card">
                 <div className="story-card__image">
                   <img src={story.image || "/placeholder.svg"} alt={story.title} />
@@ -223,25 +193,9 @@ export const HelpSheltersPage: React.FC = () => {
                 <div className="story-card__content">
                   <h3 className="story-card__title">{story.title}</h3>
                   <p className="story-card__description">{story.description}</p>
-                  <div className="story-card__stats">
-                    <div className="story-card__stat">
-                      <span className="story-card__stat-icon">❤️</span>
-                      <span className="story-card__stat-text">{story.supporters} supporters</span>
-                    </div>
-                    <div className="story-card__stat">
-                      <span className="story-card__stat-icon">📤</span>
-                      <span className="story-card__stat-text">{story.shares}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="success-stories__footer">
-            <Link to="/success-stories" className="success-stories__view-more">
-              View More Success Stories
-            </Link>
           </div>
         </div>
       </section>
