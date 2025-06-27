@@ -15,15 +15,6 @@ export const CartPage: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth)
 
   const [selectedItems, setSelectedItems] = useState<number[]>([])
-  const [promoCode, setPromoCode] = useState("")
-  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(null)
-
-  // Mock promo codes
-  const promoCodes = {
-    SAVE10: 0.1,
-    WELCOME15: 0.15,
-    PETLOVE20: 0.2,
-  }
 
   const handleQuantityChange = (id: number, newQuantity: number) => {
     dispatch(updateQuantity({ id, quantity: newQuantity }))
@@ -46,16 +37,6 @@ export const CartPage: React.FC = () => {
     }
   }
 
-  const handleApplyPromo = () => {
-    const discount = promoCodes[promoCode.toUpperCase() as keyof typeof promoCodes]
-    if (discount) {
-      setAppliedPromo({ code: promoCode.toUpperCase(), discount })
-      setPromoCode("")
-    } else {
-      alert("Invalid promo code")
-    }
-  }
-
   const handleProceedToCheckout = () => {
     if (!isAuthenticated) {
       navigate("/login")
@@ -65,9 +46,7 @@ export const CartPage: React.FC = () => {
   }
 
   const subtotal = totalAmount
-  const shipping = subtotal > 50 ? 0 : 5.99
-  const promoDiscount = appliedPromo ? subtotal * appliedPromo.discount : 0
-  const total = subtotal + shipping - promoDiscount
+  const total = subtotal
 
   if (items.length === 0) {
     return (
@@ -97,7 +76,6 @@ export const CartPage: React.FC = () => {
 
         <div className="cart-content">
           <div className="cart-main">
-            {/* Cart Table */}
             <div className="cart-table">
               <div className="cart-table__header">
                 <div className="cart-table__col cart-table__col--product">
@@ -175,58 +153,11 @@ export const CartPage: React.FC = () => {
                 ))}
               </div>
             </div>
-
-            {/* Promo Code Section */}
-            <div className="promo-section">
-              <h3 className="promo-section__title">Have a Promo Code?</h3>
-              <div className="promo-section__form">
-                <input
-                  type="text"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  placeholder="Enter promo code"
-                  className="promo-section__input"
-                />
-                <button onClick={handleApplyPromo} className="promo-section__button">
-                  Apply
-                </button>
-              </div>
-              <button className="promo-section__view-promotions">View Available Promotions</button>
-
-              {appliedPromo && (
-                <div className="applied-promo">
-                  <span className="applied-promo__text">
-                    Promo code "{appliedPromo.code}" applied! {(appliedPromo.discount * 100).toFixed(0)}% off
-                  </span>
-                  <button onClick={() => setAppliedPromo(null)} className="applied-promo__remove">
-                    ×
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
-          {/* Order Summary Sidebar */}
           <div className="cart-sidebar">
             <div className="order-summary">
               <h3 className="order-summary__title">Order Summary</h3>
-
-              <div className="order-summary__line">
-                <span>Subtotal</span>
-                <span>€{subtotal.toFixed(2)}</span>
-              </div>
-
-              <div className="order-summary__line">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? "Free" : `€${shipping.toFixed(2)}`}</span>
-              </div>
-
-              {appliedPromo && (
-                <div className="order-summary__line order-summary__line--discount">
-                  <span>Discount ({appliedPromo.code})</span>
-                  <span>-€{promoDiscount.toFixed(2)}</span>
-                </div>
-              )}
 
               <div className="order-summary__total">
                 <span>Total</span>
@@ -245,10 +176,6 @@ export const CartPage: React.FC = () => {
                 <div className="feature-item">
                   <span className="feature-item__icon">🔒</span>
                   <span className="feature-item__text">Secure Checkout</span>
-                </div>
-                <div className="feature-item">
-                  <span className="feature-item__icon">🚚</span>
-                  <span className="feature-item__text">Free Shipping on orders over $50</span>
                 </div>
                 <div className="feature-item">
                   <span className="feature-item__icon">❤️</span>
@@ -273,4 +200,4 @@ export const CartPage: React.FC = () => {
   )
 }
 
-export default CartPage
+export default CartPage;
