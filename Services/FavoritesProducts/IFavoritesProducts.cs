@@ -9,7 +9,7 @@ namespace Team_Project_Meta.Services.FavoritesProducts
         Task<FavoritesProductDto?> AddAsync(int userId, int productId);
 
         // Delete учитывает userId для проверки прав удаления
-        Task<bool> DeleteAsync(int id, int userId);
+        Task<bool> DeleteByProductIdAsync(int productId, int userId);
         Task<bool> ExistsAsync(int userId, int productId);
     }
 }

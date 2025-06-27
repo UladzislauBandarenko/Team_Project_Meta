@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Team_Project_Meta.DTOs.FavoritesProduct;
 using Team_Project_Meta.Services.FavoritesProducts;
@@ -49,15 +50,15 @@ public class FavoritesProductsController : ControllerBase
     }
 
     // 3) Пользователь удаляет свой продукт из фаворитов
-    [HttpDelete("{id}")]
+    [HttpDelete("{productId}")]
     [Authorize(Roles = "buyer")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> DeleteByProductId(int productId)
     {
         int userId = GetUserIdFromToken();
 
-        var deleted = await _service.DeleteAsync(id, userId);
+        var deleted = await _service.DeleteByProductIdAsync(productId, userId);
         if (!deleted)
-            return Forbid("Not found or not your favorite.");
+            return NotFound("Favorite not found or not yours.");
 
         return NoContent();
     }

@@ -4,9 +4,16 @@ import browserHistory from "./Routes/browserHistory"
 import ScrollToTop from "./Routes/ScrollToTop"
 import { Header, Footer } from "./Layouts/index"
 import { AppRoutes } from "./Routes/AppRoutes"
+import { FavoritesSync } from "./Sync/FavoritesSync"
+import { CartSync } from "./Sync/CartSync"
+import { useFavoritesInitializer } from "./redux/wishlist/useFavoritesInitializer"
+import { useCartInitializer } from "./redux/cart/useCartInitializer"
 import { useLocation } from "react-router-dom"
 
 function App() {
+    useFavoritesInitializer()
+    useCartInitializer()
+    
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith("/admin")
 
@@ -19,7 +26,9 @@ function App() {
   }
 
   return (
-    <div className="App">
+      <div className="App">
+          <FavoritesSync />
+          <CartSync />
       <Header />
       <AppRoutes />
       <Footer />

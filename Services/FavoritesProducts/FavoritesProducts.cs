@@ -68,14 +68,17 @@ public class FavoritesProductsService : IFavoritesProductsService
         };
     }
 
-    public async Task<bool> DeleteAsync(int id, int userId)
+    public async Task<bool> DeleteByProductIdAsync(int productId, int userId)
     {
-        var favorite = await _context.FavoritesProducts.FindAsync(id);
-        if (favorite == null || favorite.UserId != userId)
+        var favorite = await _context.FavoritesProducts
+            .FirstOrDefaultAsync(f => f.ProductId == productId && f.UserId == userId);
+
+        if (favorite == null)
             return false;
 
         _context.FavoritesProducts.Remove(favorite);
         await _context.SaveChangesAsync();
+
         return true;
     }
 }

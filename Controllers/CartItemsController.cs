@@ -18,14 +18,11 @@ namespace Team_Project_Meta.Controllers
             _cartItemService = cartItemService;
         }
 
-        [HttpGet("cart/{cartId}")]
-        public async Task<IActionResult> GetItemsByCartId(int cartId)
+        [HttpGet]
+        public async Task<IActionResult> GetItemsForCurrentUser()
         {
             int userId = GetUserIdFromClaims();
-
-            // Проверяем, что корзина принадлежит пользователю
-            if (!await _cartItemService.IsCartOwnedByUserAsync(cartId, userId))
-                return Forbid("Access denied to this cart.");
+            int cartId = await _cartItemService.GetOrCreateUserCartIdAsync(userId);
 
             var items = await _cartItemService.GetItemsByCartIdAsync(cartId);
             return Ok(items);
@@ -36,22 +33,19 @@ namespace Team_Project_Meta.Controllers
         {
             int userId = GetUserIdFromClaims();
 
-            // Проверяем, что корзина принадлежит пользователю
-            if (!await _cartItemService.IsCartOwnedByUserAsync(dto.CartId, userId))
-                return Forbid("Access denied to this cart.");
-
             var result = await _cartItemService.AddOrUpdateCartItemAsync(dto, userId);
 
             if (result == null)
-                return BadRequest("Invalid cart or you don't have permission.");
+                return BadRequest("Could not add or update cart item.");
 
             return Ok(result);
         }
 
-        [HttpPut("{cartId}/items/{itemId}")]
-        public async Task<IActionResult> UpdateCartItem(int cartId, int itemId, [FromBody] UpdateCartItemDto dto)
+        [HttpPut("{itemId}")]
+        public async Task<IActionResult> UpdateCartItem(int itemId, [FromBody] UpdateCartItemDto dto)
         {
             int userId = GetUserIdFromClaims();
+            int cartId = await _cartItemService.GetOrCreateUserCartIdAsync(userId);
 
             var updated = await _cartItemService.UpdateCartItemAsync(cartId, itemId, userId, dto);
 

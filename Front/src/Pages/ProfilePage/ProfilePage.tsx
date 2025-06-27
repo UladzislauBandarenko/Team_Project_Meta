@@ -3,8 +3,10 @@ import React, { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { clearCredentials } from "../../redux/auth/authSlice"
+import { logout } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./ProfilePage.scss"
+import { useAppDispatch } from "../../redux/store"
 
 interface OrderItem {
   id: number
@@ -227,8 +229,10 @@ function ProfilePage() {
     return saved ? JSON.parse(saved) : {}
   })
 
-  const handleLogout = () => {
-    dispatch(clearCredentials())
+    function handleLogout() {
+        const dispatch = useAppDispatch()
+
+      dispatch(logout())
     navigate("/")
   }
 

@@ -12,8 +12,7 @@ interface RegisterRequest {
 }
 
 interface AuthResponse {
-  accessToken: string
-  refreshToken: string
+  token: string,
   user: {
     id: string
     email: string
@@ -80,8 +79,7 @@ export const localAuthService = {
         if (user) {
           const isAdmin = user.email === "admin@example.com"
           const authResponse: AuthResponse = {
-            accessToken: generateToken(),
-            refreshToken: generateToken(),
+              token: generateToken(),
             user: {
               id: user.id,
               email: user.email,
@@ -127,21 +125,19 @@ export const localAuthService = {
 users.push(newUser)
 saveUsers(users)
 
-const authResponse: AuthResponse = {
-  accessToken: generateToken(),
-  refreshToken: generateToken(),
-  user: {
-    id: newUser.id,
-    email: newUser.email,
-    firstName: newUser.firstName,
-    lastName: newUser.lastName,
-    phone: newUser.phone,
-    isEmailConfirmed: true,
-    roles: newUser.roles,
-    lastLoginAt: new Date().toISOString(),
-    createdAt: newUser.createdAt,
-  },
-
+        const authResponse: AuthResponse = {
+            token: generateToken(),
+          user: {
+            id: newUser.id,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            phone: newUser.phone,
+            isEmailConfirmed: true,
+            roles: ["user"],
+            lastLoginAt: new Date().toISOString(),
+            createdAt: newUser.createdAt,
+          },
         }
         resolve(authResponse)
       }, 500)

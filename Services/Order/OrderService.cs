@@ -22,14 +22,11 @@ namespace Team_Project_Meta.Services.Order
             _deliveryservices = deliveryservices;
             _usersService = usersService;
             _notificationService = notificationService;
-
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersAsync()
         {
             var orders = await _context.Orders.ToListAsync();
-
-            // Load order items for all orders in one query for efficiency
             var orderIds = orders.Select(o => o.Id).ToList();
 
             var orderItems = await _context.OrderItems
@@ -37,7 +34,16 @@ namespace Team_Project_Meta.Services.Order
                 .Include(oi => oi.Product)
                 .ToListAsync();
 
-            return orders.Select(o => MapOrderToDto(o, orderItems.Where(oi => oi.OrderId == o.Id))).ToList();
+            var userIds = orders.Select(o => o.UserId).Distinct().ToList();
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+            return orders.Select(o =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == o.UserId);
+                return MapOrderToDto(o, orderItems.Where(oi => oi.OrderId == o.Id), user);
+            }).ToList();
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(int userId)
@@ -53,7 +59,9 @@ namespace Team_Project_Meta.Services.Order
                 .Include(oi => oi.Product)
                 .ToListAsync();
 
-            return orders.Select(o => MapOrderToDto(o, orderItems.Where(oi => oi.OrderId == o.Id))).ToList();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            return orders.Select(o => MapOrderToDto(o, orderItems.Where(oi => oi.OrderId == o.Id), user)).ToList();
         }
 
         public async Task<OrderDto?> GetOrderByIdAsync(int id)
@@ -66,22 +74,33 @@ namespace Team_Project_Meta.Services.Order
                 .Include(oi => oi.Product)
                 .ToListAsync();
 
-            return MapOrderToDto(order, orderItems);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == order.UserId);
+
+            return MapOrderToDto(order, orderItems, user);
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersBySellerIdAsync(int sellerId)
         {
-            // Get all orders that include at least one product sold by this seller
             var orders = await _context.Orders
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
                 .Where(o => o.OrderItems!.Any(oi => oi.Product != null && oi.Product.SellerId == sellerId))
                 .ToListAsync();
 
-            var result = orders.Select(order => MapOrderToDto(
-                order,
-                order.OrderItems!.Where(oi => oi.Product != null && oi.Product.SellerId == sellerId)
-            ));
+            var userIds = orders.Select(o => o.UserId).Distinct().ToList();
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+            var result = orders.Select(order =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == order.UserId);
+                return MapOrderToDto(
+                    order,
+                    order.OrderItems!.Where(oi => oi.Product != null && oi.Product.SellerId == sellerId),
+                    user
+                );
+            });
 
             return result;
         }
@@ -126,6 +145,7 @@ namespace Team_Project_Meta.Services.Order
 
             var createdOrderItems = await _context.OrderItems
                 .Where(oi => oi.OrderId == order.Id)
+                .Include(oi => oi.Product)
                 .ToListAsync();
 
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
@@ -135,26 +155,71 @@ namespace Team_Project_Meta.Services.Order
                 await _context.SaveChangesAsync();
             }
 
-            if (SaveShipping)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (SaveShipping && user != null)
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                if (user != null)
-                {
-                    user.Address = dto.Address;
-                    user.City = dto.City;
-                    user.PostalCode = dto.PostalCode;
-                    user.Country = dto.Country;
-                    user.PhoneNumber = dto.PhoneNumber;
-                    user.ApartmentNumber = dto.ApartmentNumber;
-                    _context.Users.Update(user);
-                    await _context.SaveChangesAsync();
-                }
+                user.Address = dto.Address;
+                user.City = dto.City;
+                user.PostalCode = dto.PostalCode;
+                user.Country = dto.Country;
+                user.PhoneNumber = dto.PhoneNumber;
+                user.ApartmentNumber = dto.ApartmentNumber;
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
             }
 
             await NotifyBuyerAsync(order, userId);
             await NotifySellersAsync(order.Id);
 
-            return MapOrderToDto(order, createdOrderItems);
+            return MapOrderToDto(order, createdOrderItems, user);
+        }
+
+        public async Task<bool> DeleteOrderAsync(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return false;
+
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        private static OrderDto MapOrderToDto(Models.Order o, IEnumerable<Models.OrderItem>? orderItems, User? user = null)
+        {
+            return new OrderDto
+            {
+                Id = o.Id,
+                UserId = o.UserId,
+                DeliveryServiceId = o.DeliveryServiceId,
+                TotalPrice = o.TotalPrice,
+                TrackingNumber = o.TrackingNumber,
+                Status = o.Status,
+                CreatedDate = o.CreatedDate,
+                LastUpdatedDate = o.LastUpdatedDate,
+                Address = o.Address,
+                City = o.City,
+                PostalCode = o.PostalCode,
+                Country = o.Country,
+                PhoneNumber = o.PhoneNumber,
+                ApartmentNumber = o.ApartmentNumber,
+                FirstName = user?.FirstName,
+                LastName = user?.LastName,
+                OrderItems = orderItems?.Select(oi => new OrderItemDto
+                {
+                    Id = oi.Id,
+                    OrderId = oi.OrderId,
+                    ProductId = oi.ProductId,
+                    Quantity = oi.Quantity,
+                    Price = oi.Price,
+                    ProductName = oi.Product?.ProductName,
+                    ImageBase64 = oi.Product?.ImageData != null
+                        ? Convert.ToBase64String(oi.Product.ImageData)
+                        : null
+                }).ToList() ?? new List<OrderItemDto>()
+            };
         }
 
         private async Task NotifyBuyerAsync(Models.Order order, int userId)
@@ -201,58 +266,11 @@ namespace Team_Project_Meta.Services.Order
                     var body = $"<h3>Congratulations!</h3><p>The following product(s) were ordered:</p><ul>";
                     foreach (var name in sellerProductNames)
                         body += $"<li>{name}</li>";
-
                     body += "</ul>";
 
                     await _notificationService.SendEmailAsync(seller.Email, subject, body);
                 }
             }
         }
-
-        public async Task<bool> DeleteOrderAsync(int id)
-        {
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null) return false;
-
-            _context.Orders.Remove(order);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-        private static OrderDto MapOrderToDto(Models.Order o, IEnumerable<Models.OrderItem>? orderItems)
-        {
-            return new OrderDto
-            {
-                Id = o.Id,
-                UserId = o.UserId,
-                DeliveryServiceId = o.DeliveryServiceId,
-                TotalPrice = o.TotalPrice,
-                TrackingNumber = o.TrackingNumber,
-                Status = o.Status,
-                CreatedDate = o.CreatedDate,
-                LastUpdatedDate = o.LastUpdatedDate,
-                Address = o.Address,
-                City = o.City,
-                PostalCode = o.PostalCode,
-                Country = o.Country,
-                PhoneNumber = o.PhoneNumber,
-                ApartmentNumber = o.ApartmentNumber,
-
-                OrderItems = orderItems?.Select(oi => new OrderItemDto
-                {
-                    Id = oi.Id,
-                    OrderId = oi.OrderId,
-                    ProductId = oi.ProductId,
-                    Quantity = oi.Quantity,
-                    Price = oi.Price,
-                    ProductName = oi.Product?.ProductName,
-                    ImageBase64 = oi.Product?.ImageData != null
-                        ? Convert.ToBase64String(oi.Product.ImageData)
-                        : null
-                }).ToList() ?? new List<OrderItemDto>()
-            };
-        }
-
     }
 }
-

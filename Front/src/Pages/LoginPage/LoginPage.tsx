@@ -72,8 +72,9 @@ export const LoginPage: React.FC = () => {
         ...prev,
         [name]: undefined,
       }))
-    }
+   }
   }
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
