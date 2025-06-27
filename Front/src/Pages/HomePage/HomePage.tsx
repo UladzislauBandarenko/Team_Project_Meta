@@ -57,7 +57,7 @@ const categories = [
   },
 ]
 
-// Mock data for bestseller products
+// Mock data for bestseller products - matching the screenshot layout
 const bestsellerProducts = [
   {
     id: 1,
@@ -65,8 +65,8 @@ const bestsellerProducts = [
     price: 39.99,
     originalPrice: null,
     rating: 4.8,
-    reviews: 124,
-    image: "/placeholder.svg?height=200&width=200",
+    reviews: 128,
+    image: "/placeholder.svg?height=180&width=250",
     category: "dogs",
   },
   {
@@ -75,8 +75,8 @@ const bestsellerProducts = [
     price: 24.99,
     originalPrice: null,
     rating: 4.6,
-    reviews: 89,
-    image: "/placeholder.svg?height=200&width=200",
+    reviews: 94,
+    image: "/placeholder.svg?height=180&width=250",
     category: "cats",
   },
   {
@@ -85,8 +85,8 @@ const bestsellerProducts = [
     price: 59.99,
     originalPrice: null,
     rating: 4.9,
-    reviews: 156,
-    image: "/placeholder.svg?height=200&width=200",
+    reviews: 76,
+    image: "/placeholder.svg?height=180&width=250",
     category: "dogs",
   },
   {
@@ -95,8 +95,8 @@ const bestsellerProducts = [
     price: 79.99,
     originalPrice: null,
     rating: 4.5,
-    reviews: 67,
-    image: "/placeholder.svg?height=200&width=200",
+    reviews: 112,
+    image: "/placeholder.svg?height=180&width=250",
     category: "dogs",
   },
   {
@@ -105,8 +105,8 @@ const bestsellerProducts = [
     price: 34.99,
     originalPrice: null,
     rating: 4.7,
-    reviews: 203,
-    image: "/placeholder.svg?height=200&width=200",
+    reviews: 89,
+    image: "/placeholder.svg?height=180&width=250",
     category: "cats",
   },
   {
@@ -115,9 +115,29 @@ const bestsellerProducts = [
     price: 29.99,
     originalPrice: null,
     rating: 4.4,
-    reviews: 91,
-    image: "/placeholder.svg?height=200&width=200",
+    reviews: 104,
+    image: "/placeholder.svg?height=180&width=250",
     category: "dogs",
+  },
+  {
+    id: 7,
+    name: "Aquarium Starter Kit - 10L",
+    price: 89.99,
+    originalPrice: null,
+    rating: 4.3,
+    reviews: 67,
+    image: "/placeholder.svg?height=180&width=250",
+    category: "fish",
+  },
+  {
+    id: 8,
+    name: "Bird Cage with Accessories",
+    price: 119.99,
+    originalPrice: null,
+    rating: 4.6,
+    reviews: 52,
+    image: "/placeholder.svg?height=180&width=250",
+    category: "birds",
   },
 ]
 
@@ -323,7 +343,7 @@ export const HomePage: React.FC = () => {
               <div className="impact__stat">
                 <div className="impact__stat-icon">❤️</div>
                 <div className="impact__stat-content">
-                  <div className="impact__stat-number">$125,840</div>
+                  <div className="impact__stat-number">€125,840</div>
                   <div className="impact__stat-label">donated to date</div>
                 </div>
               </div>
@@ -331,7 +351,7 @@ export const HomePage: React.FC = () => {
               <div className="impact__stat">
                 <div className="impact__stat-icon">🏠</div>
                 <div className="impact__stat-content">
-                  <div className="impact__stat-number">42</div>
+                  <div className="impact__stat-number">4</div>
                   <div className="impact__stat-label">partner shelters</div>
                 </div>
               </div>
