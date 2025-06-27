@@ -2,12 +2,13 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { addToCart } from "../../redux/cart/cartSlice"
 import { toggleWishlistItem } from "../../redux/wishlist/wishlistSlice"
 import type { RootState } from "../../redux/store"
 import "./HomePage.scss"
+
 import cover from "../../assets/IMG-44.jpg"
 import dog from "../../assets/IMG-57.jpg"
 import cat from "../../assets/IMG-64.jpg"
@@ -17,47 +18,15 @@ import small from "../../assets/IMG-85.jpg"
 import reptile from "../../assets/IMG-92.jpg"
 import help from "../../assets/IMG-372.jpg"
 
-// Mock data for categories
 const categories = [
-  {
-    id: 1,
-    name: "Dog Products",
-    image: dog,
-    link: "/shop/dog",
-  },
-  {
-    id: 2,
-    name: "Cat Products",
-    image: cat,
-    link: "/shop/cat",
-  },
-  {
-    id: 3,
-    name: "Fish Products",
-    image: fish,
-    link: "/shop/fish",
-  },
-  {
-    id: 4,
-    name: "Bird Products",
-    image: bird,
-    link: "/shop/bird",
-  },
-  {
-    id: 5,
-    name: "Small Pet Products",
-    image: small,
-    link: "/shop/small-pets",
-  },
-  {
-    id: 6,
-    name: "Reptile Products",
-    image: reptile,
-    link: "/shop/reptile",
-  },
+  { id: 1, name: "Dog Products", image: dog, link: "/shop/dog" },
+  { id: 2, name: "Cat Products", image: cat, link: "/shop/cat" },
+  { id: 3, name: "Fish Products", image: fish, link: "/shop/fish" },
+  { id: 4, name: "Bird Products", image: bird, link: "/shop/bird" },
+  { id: 5, name: "Small Pet Products", image: small, link: "/shop/small-pets" },
+  { id: 6, name: "Reptile Products", image: reptile, link: "/shop/reptile" },
 ]
 
-// Mock data for bestseller products - matching the screenshot layout
 const bestsellerProducts = [
   {
     id: 1,
@@ -143,13 +112,16 @@ const bestsellerProducts = [
 
 export const HomePage: React.FC = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
   const [searchQuery, setSearchQuery] = useState("")
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle search logic
-    console.log("Searching for:", searchQuery)
+    const trimmed = searchQuery.trim()
+    if (trimmed) {
+      navigate(`/shop?search=${encodeURIComponent(trimmed)}`)
+    }
   }
 
   const handleAddToCart = (product: any) => {
@@ -160,9 +132,8 @@ export const HomePage: React.FC = () => {
         price: product.price,
         image: product.image,
         category: product.category,
-      }),
+      })
     )
-    console.log("Added to cart:", product.name)
   }
 
   const handleToggleWishlist = (product: any) => {
@@ -175,7 +146,7 @@ export const HomePage: React.FC = () => {
         rating: product.rating,
         reviews: product.reviews,
         category: product.category,
-      }),
+      })
     )
   }
 
@@ -185,34 +156,11 @@ export const HomePage: React.FC = () => {
 
   const renderStars = (rating: number) => {
     const stars = []
-    const fullStars = Math.floor(rating)
-    const hasHalfStar = rating % 1 !== 0
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <span key={i} className="star filled">
-          ★
-        </span>,
-      )
-    }
-
-    if (hasHalfStar) {
-      stars.push(
-        <span key="half" className="star half">
-          ★
-        </span>,
-      )
-    }
-
-    const emptyStars = 5 - Math.ceil(rating)
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <span key={`empty-${i}`} className="star empty">
-          ★
-        </span>,
-      )
-    }
-
+    const full = Math.floor(rating)
+    const half = rating % 1 !== 0
+    for (let i = 0; i < full; i++) stars.push(<span key={i}>★</span>)
+    if (half) stars.push(<span key="half">★</span>)
+    for (let i = stars.length; i < 5; i++) stars.push(<span key={`e${i}`}>☆</span>)
     return stars
   }
 
@@ -226,7 +174,6 @@ export const HomePage: React.FC = () => {
             <p className="hero__subtitle">
               Find the best products for your furry friends while supporting animal shelters with every purchase.
             </p>
-
             <form className="hero__search" onSubmit={handleSearch}>
               <input
                 type="text"
@@ -235,80 +182,66 @@ export const HomePage: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="hero__search-input"
               />
-              <button type="submit" className="hero__search-button">
-                🔍
-              </button>
+              <button type="submit" className="hero__search-button">🔍</button>
             </form>
-
             <Link to="/shop" className="hero__cta-button">
               Find Products
             </Link>
           </div>
-
           <div className="hero__image">
-            <img src={cover || "/placeholder.svg"} alt="Happy pets with products" className="hero__image-main" />
+            <img src={cover} alt="Happy pets with products" className="hero__image-main" />
           </div>
         </div>
       </section>
 
-      {/* Pet Categories Section */}
+      {/* Categories Section */}
       <section className="categories">
         <div className="categories__container">
           <div className="categories__header">
             <h2 className="categories__title">Pet Categories</h2>
             <p className="categories__subtitle">Find everything your pet needs in one place</p>
           </div>
-
           <div className="categories__grid">
-            {categories.map((category) => (
-              <Link key={category.id} to={category.link} className="category-card">
+            {categories.map((cat) => (
+              <Link key={cat.id} to={cat.link} className="category-card">
                 <div className="category-card__image">
-                  <img src={category.image || "/placeholder.svg"} alt={category.name} />
+                  <img src={cat.image || "/placeholder.svg"} alt={cat.name} />
                 </div>
-                <h3 className="category-card__name">{category.name}</h3>
+                <h3 className="category-card__name">{cat.name}</h3>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Bestseller Products Section */}
+      {/* Bestseller Section */}
       <section className="bestsellers">
         <div className="bestsellers__container">
           <div className="bestsellers__header">
             <h2 className="bestsellers__title">Bestseller Products</h2>
             <p className="bestsellers__subtitle">Most loved products by pet parents like you</p>
           </div>
-
           <div className="bestsellers__grid">
-            {bestsellerProducts.map((product) => (
+            {bestsellerProducts.slice(0, 8).map((product) => (
               <div key={product.id} className="product-card">
                 <div className="product-card__image">
-                  <img src={product.image || "/placeholder.svg"} alt={product.name} />
+                  <img src={product.image} alt={product.name} />
                   <button
                     className={`product-card__wishlist ${isInWishlist(product.id) ? "active" : ""}`}
                     onClick={() => handleToggleWishlist(product)}
-                    title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                   >
                     {isInWishlist(product.id) ? "❤️" : "🤍"}
                   </button>
                 </div>
-
                 <div className="product-card__content">
                   <h3 className="product-card__name">{product.name}</h3>
-
                   <div className="product-card__rating">
                     <div className="product-card__stars">{renderStars(product.rating)}</div>
                     <span className="product-card__reviews">({product.reviews})</span>
                   </div>
-
                   <div className="product-card__price">
                     <span className="product-card__current-price">€{product.price}</span>
-                    {product.originalPrice && (
-                      <span className="product-card__original-price">€{product.originalPrice}</span>
-                    )}
                   </div>
-
                   <button className="product-card__add-to-cart" onClick={() => handleAddToCart(product)}>
                     🛒 Add to Cart
                   </button>
@@ -316,7 +249,6 @@ export const HomePage: React.FC = () => {
               </div>
             ))}
           </div>
-
           <div className="bestsellers__footer">
             <Link to="/shop" className="bestsellers__view-all">
               View All Products
@@ -331,14 +263,12 @@ export const HomePage: React.FC = () => {
           <div className="impact__image">
             <img src={help || "/placeholder.svg"} alt="Veterinarians helping animals" />
           </div>
-
           <div className="impact__content">
             <h2 className="impact__title">Your Purchase = Real help</h2>
             <p className="impact__description">
               Part of every payment goes to support shelters. With each purchase, you're directly contributing to the
               wellbeing of animals in need across the country.
             </p>
-
             <div className="impact__stats">
               <div className="impact__stat">
                 <div className="impact__stat-icon">❤️</div>
@@ -347,7 +277,6 @@ export const HomePage: React.FC = () => {
                   <div className="impact__stat-label">donated to date</div>
                 </div>
               </div>
-
               <div className="impact__stat">
                 <div className="impact__stat-icon">🏠</div>
                 <div className="impact__stat-content">
@@ -356,7 +285,6 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
             </div>
-
             <Link to="/help-shelters" className="impact__learn-more">
               Learn More
             </Link>
