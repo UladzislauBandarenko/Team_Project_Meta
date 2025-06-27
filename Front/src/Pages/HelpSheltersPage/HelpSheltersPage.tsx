@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import { Link } from "react-router-dom"
 import "./HelpSheltersPage.scss"
 import support from "../../assets/IMG-40.png"
@@ -76,14 +75,6 @@ const partnerShelters = [
 ]
 
 export const HelpSheltersPage: React.FC = () => {
-  const [newsletterEmail, setNewsletterEmail] = useState("")
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Newsletter subscription:", newsletterEmail)
-    setNewsletterEmail("")
-  }
-
   return (
     <div className="help-shelters-page">
       {/* Hero Section */}
@@ -252,31 +243,6 @@ export const HelpSheltersPage: React.FC = () => {
               View More Success Stories
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Newsletter Section */}
-      <section className="newsletter">
-        <div className="newsletter__container">
-          <h2 className="newsletter__title">Join Our Pet-Loving Community</h2>
-          <p className="newsletter__subtitle">
-            Subscribe to our newsletter for exclusive deals, pet care tips, and updates on how your purchases are
-            helping animal shelters.
-          </p>
-
-          <form className="newsletter__form" onSubmit={handleNewsletterSubmit}>
-            <input
-              type="email"
-              placeholder="Your email address"
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              className="newsletter__input"
-              required
-            />
-            <button type="submit" className="newsletter__button">
-              Subscribe
-            </button>
-          </form>
         </div>
       </section>
     </div>
