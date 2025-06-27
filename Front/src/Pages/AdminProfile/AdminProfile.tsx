@@ -1,9 +1,13 @@
+"use client"
+
 import type React from "react"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
+import { useNavigate } from "react-router-dom"
 import { clearCredentials } from "../../redux/auth/authSlice"
 import "./AdminProfile.scss"
 import UsersPage from "./UsersPage"
+import OrdersPage from "./OrdersPage"
 
 interface Category {
   id: number
@@ -37,6 +41,7 @@ interface AdminStats {
 
 const AdminProfile: React.FC = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState("dashboard")
   const [categories, setCategories] = useState<Category[]>([
     { id: 1, name: "Dog Products" },
@@ -150,6 +155,7 @@ const AdminProfile: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(clearCredentials())
+    navigate('/login')
   }
 
   const handleAddCategory = () => {
@@ -338,16 +344,7 @@ const AdminProfile: React.FC = () => {
       case "products":
         return renderProducts()
       case "orders":
-        return (
-          <div className="admin-section">
-            <div className="admin-section__header">
-              <h2>Orders Management</h2>
-            </div>
-            <div className="admin-section__content">
-              <p>Orders management functionality will be implemented here.</p>
-            </div>
-          </div>
-        )
+        return <OrdersPage />
       case "users":
         return <UsersPage />
       default:
