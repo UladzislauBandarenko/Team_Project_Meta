@@ -176,7 +176,7 @@ const deliveryServices = {
 }
 
 function ProfilePage() {
-  const dispatch = useDispatch()
+    const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const user = useSelector((state: RootState) => state.auth.user)
 
@@ -230,8 +230,6 @@ function ProfilePage() {
   })
 
     function handleLogout() {
-        const dispatch = useAppDispatch()
-
       dispatch(logout())
     navigate("/")
   }

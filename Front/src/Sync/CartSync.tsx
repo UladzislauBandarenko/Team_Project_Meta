@@ -72,7 +72,7 @@ export const CartSync = () => {
             }
         }
 
-        const interval = setInterval(syncCart, 20_000)
+        const interval = setInterval(syncCart, 120_000)
         syncCart()
 
         return () => clearInterval(interval)

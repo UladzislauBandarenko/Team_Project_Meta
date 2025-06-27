@@ -52,21 +52,21 @@ export const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<Omit<CartItem, "quantity">>) => {
-      const existingItem = state.items.find((item) => item.id === action.payload.id)
+      addToCart: (state, action: PayloadAction<Omit<CartItem, "quantity"> & { quantity?: number }>) => {
+          const existingItem = state.items.find((item) => item.id === action.payload.id)
 
-      if (existingItem) {
-        existingItem.quantity += 1
-      } else {
-        state.items.push({ ...action.payload, quantity: 1 })
-      }
+          if (existingItem) {
+              existingItem.quantity = action.payload.quantity ?? existingItem.quantity + 1
+          } else {
+              state.items.push({ ...action.payload, quantity: action.payload.quantity ?? 1 })
+          }
 
-      const totals = calculateTotals(state.items)
-      state.totalItems = totals.totalItems
-      state.totalAmount = totals.totalAmount
+          const totals = calculateTotals(state.items)
+          state.totalItems = totals.totalItems
+          state.totalAmount = totals.totalAmount
 
-      saveCartToStorage(state.items)
-    },
+          saveCartToStorage(state.items)
+      },
 
     removeFromCart: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter((item) => item.id !== action.payload)

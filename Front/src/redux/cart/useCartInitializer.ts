@@ -8,21 +8,28 @@ export const useCartInitializer = () => {
     const dispatch = useDispatch()
     const isAuthenticated = useSelector((state: RootState) => !!state.auth.user)
     const { data, isSuccess } = useGetCartQuery(undefined, { skip: !isAuthenticated })
+    const currentItems = useSelector((state: RootState) => state.cart.items)
 
     useEffect(() => {
         if (isAuthenticated && isSuccess && Array.isArray(data)) {
             data.forEach((item) => {
-                dispatch(
-                    addToCart({
-                        id: item.productId, // frontend использует productId как id
-                        name: "",
-                        price: 0,
-                        image: "",
-                        quantity: item.quantity,
-                        category: "",
-                    } as CartItem)
+                const alreadyExists = currentItems.some(
+                    (local) => local.id === item.productId
                 )
+
+                if (!alreadyExists) {
+                    dispatch(
+                        addToCart({
+                            id: item.productId,
+                            name: "",
+                            price: 0,
+                            image: "",
+                            quantity: item.quantity,
+                            category: "",
+                        } as CartItem)
+                    )
+                }
             })
         }
-    }, [isAuthenticated, isSuccess, data, dispatch])
+    }, [isAuthenticated, isSuccess, data, dispatch, currentItems])
 }
