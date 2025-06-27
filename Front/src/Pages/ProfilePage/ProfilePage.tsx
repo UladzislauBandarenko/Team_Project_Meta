@@ -1,7 +1,5 @@
-"use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { clearCredentials } from "../../redux/auth/authSlice"
@@ -42,7 +40,6 @@ interface Review {
   rating: number
   comment: string
 }
-
 const mockOrders: Order[] = [
   {
     id: "ORD-12345",
@@ -183,6 +180,20 @@ function ProfilePage() {
   const navigate = useNavigate()
   const user = useSelector((state: RootState) => state.auth.user)
 
+  useEffect(() => {
+    if (!user) {
+      navigate("/login")
+    } else if (user.role === "admin") {
+      navigate("/admin")
+    } else if (user.role === "seller") {
+      navigate("/seller/dashboard")
+    }
+  }, [user, navigate])
+
+  if (!user || user.role !== "buyer") {
+    return <div className="profile-page__loading">Loading profile...</div>
+  }
+
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isEditingAddress, setIsEditingAddress] = useState(false)
 
@@ -191,9 +202,9 @@ function ProfilePage() {
     return saved
       ? JSON.parse(saved)
       : {
-          firstName: user?.firstName || "John",
-          lastName: user?.lastName || "Doe",
-          email: user?.email || "john.doe@example.com",
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
         }
   })
 
@@ -218,31 +229,6 @@ function ProfilePage() {
     return saved ? JSON.parse(saved) : {}
   })
 
-  function handleViewOrderDetails(order: Order) {
-    setSelectedOrder(order)
-    setShowOrderDetails(true)
-  }
-
-  function handleCloseOrderDetails() {
-    setShowOrderDetails(false)
-    setSelectedOrder(null)
-  }
-
-  function handleReviewSubmit(productId: number, rating: number, comment: string) {
-    const reviewKey = `${selectedOrder?.id}-${productId}`
-    const newReviews = {
-      ...reviews,
-      [reviewKey]: { rating, comment },
-    }
-    setReviews(newReviews)
-    localStorage.setItem("productReviews", JSON.stringify(newReviews))
-  }
-
-  function getProductReview(productId: number) {
-    const reviewKey = `${selectedOrder?.id}-${productId}`
-    return reviews[reviewKey] || null
-  }
-
     function handleLogout() {
         const dispatch = useAppDispatch()
 
@@ -250,33 +236,21 @@ function ProfilePage() {
     navigate("/")
   }
 
-  function handleProfileEdit() {
-    setIsEditingProfile(!isEditingProfile)
-  }
-
-  function handleAddressEdit() {
-    setIsEditingAddress(!isEditingAddress)
-  }
-
-  function handleProfileSave() {
+  const handleProfileEdit = () => setIsEditingProfile(true)
+  const handleAddressEdit = () => setIsEditingAddress(true)
+  const handleProfileSave = () => {
     localStorage.setItem("userProfile", JSON.stringify(profileData))
     setIsEditingProfile(false)
   }
-
-  function handleAddressSave() {
+  const handleAddressSave = () => {
     localStorage.setItem("userAddress", JSON.stringify(addressData))
     setIsEditingAddress(false)
   }
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-  }
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
 
-  function getStatusColor(status: string) {
+  const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "delivered":
         return "delivered"
@@ -291,18 +265,35 @@ function ProfilePage() {
     }
   }
 
-  if (!user) {
-    navigate("/login")
-    return null
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order)
+    setShowOrderDetails(true)
+  }
+
+  const handleCloseOrderDetails = () => {
+    setShowOrderDetails(false)
+    setSelectedOrder(null)
+  }
+
+  const handleReviewSubmit = (productId: number, rating: number, comment: string) => {
+    const reviewKey = `${selectedOrder?.id}-${productId}`
+    const newReviews = { ...reviews, [reviewKey]: { rating, comment } }
+    setReviews(newReviews)
+    localStorage.setItem("productReviews", JSON.stringify(newReviews))
+  }
+
+  const getProductReview = (productId: number) => {
+    const reviewKey = `${selectedOrder?.id}-${productId}`
+    return reviews[reviewKey] || null
   }
 
   return (
     <div className="profile-page">
       <div className="profile-page__container">
         <h1 className="profile-page__title">My Profile</h1>
-
         <div className="profile-page__content">
           <div className="profile-page__main">
+            
             {/* Profile Section */}
             <div className="profile-section">
               <div className="profile-header">

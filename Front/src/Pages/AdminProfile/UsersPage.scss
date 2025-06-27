@@ -1,0 +1,320 @@
+.users-page {
+  padding: 24px;
+  background: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      margin: 0;
+      color: #333;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .users-stats {
+      display: flex;
+      gap: 20px;
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .stat-label {
+          color: #666;
+          font-size: 14px;
+        }
+
+        .stat-value {
+          color: #8C471F;
+          font-weight: 600;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
+  &__stats {
+    display: flex;
+    gap: 20px;
+  }
+
+  &__stat {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.users-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.users-table-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #f8f9fa;
+
+    th {
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+      border-bottom: 1px solid #e9ecef;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #f1f3f4;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 16px;
+      color: #333;
+      font-size: 14px;
+    }
+  }
+}
+
+.user-info {
+  .user-name {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 2px;
+  }
+
+  .user-full-name {
+    font-size: 12px;
+    color: #666;
+  }
+}
+
+.role-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+
+  &.role-buyer {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
+
+  &.role-seller {
+    background: #e8f5e8;
+    color: #2e7d32;
+  }
+
+  &.role-admin {
+    background: #fff3e0;
+    color: #f57c00;
+  }
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  font-size: 16px;
+
+  &:hover {
+    background: #f1f3f4;
+  }
+
+  &.edit-btn {
+    color: #8C471F;
+  }
+}
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
+
+  h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 4px;
+    border-radius: 4px;
+
+    &:hover {
+      background: #f1f3f4;
+    }
+  }
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .form-input,
+  .form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #8C471F;
+    }
+
+    &.disabled {
+      background: #f8f9fa;
+      color: #666;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.btn-secondary {
+      background: #f8f9fa;
+      color: #666;
+
+      &:hover {
+        background: #e9ecef;
+      }
+    }
+
+    &.btn-primary {
+      background: #8C471F;
+      color: white;
+
+      &:hover {
+        background: #7a3e1b;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .users-page {
+    padding: 16px;
+  }
+
+  .users-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .users-table-container {
+    overflow-x: auto;
+  }
+
+  .users-table {
+    min-width: 600px;
+  }
+
+  .modal-content {
+    margin: 20px;
+    width: calc(100% - 40px);
+  }
+}

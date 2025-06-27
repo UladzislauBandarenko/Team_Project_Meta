@@ -1,4 +1,4 @@
-.login-page {
+.verify-code-page {
   min-height: 100vh;
   background-color: var(--background-color);
   padding-top: 70px;
@@ -27,21 +27,43 @@
 
   &__header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 24px;
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: color 0.3s;
+
+    &:hover {
+      color: var(--primary-color);
+    }
   }
 
   &__title {
-    font-size: 32px;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+  }
+
+  &__subtitle {
+    font-size: 28px;
     font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 12px;
 
     @media (max-width: 768px) {
-      font-size: 28px;
+      font-size: 24px;
     }
   }
 
-  &__subtitle {
+  &__description {
     font-size: 16px;
     color: var(--text-color);
     line-height: 1.5;
@@ -109,7 +131,7 @@
     color: var(--text-color);
   }
 
-  &__signup-link {
+  &__login-link {
     color: var(--primary-color);
     text-decoration: none;
     font-weight: 500;
@@ -146,6 +168,7 @@
   transition: border-color 0.3s;
   box-sizing: border-box;
   min-height: 50px;
+  letter-spacing: 2px; // Оставляем только для кода верификации
 
   &:focus {
     outline: none;
@@ -156,6 +179,7 @@
     color: #999;
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
+    letter-spacing: normal;
   }
 
   &.error {
@@ -163,94 +187,34 @@
   }
 }
 
-.password-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-
-  .form-input {
-    width: 100%;
-    padding-right: 50px;
-  }
-
-  .password-toggle {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--text-color);
-    padding: 8px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover:not(:disabled) {
-      background-color: var(--background-secondary);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-  }
+.error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: -8px;
-  width: 100%;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
+.resend-section {
+  margin-top: 12px;
+  text-align: center;
 }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--text-color);
-
-  input[type='checkbox'] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--primary-color);
-  }
-
-  .checkbox-text {
-    line-height: 1.4;
-  }
-}
-
-.forgot-password-link {
+.resend-button {
   background: none;
   border: none;
   color: var(--primary-color);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: underline;
   padding: 0;
   font-family: 'Poppins', sans-serif;
 
   &:hover {
-    text-decoration: underline;
+    color: var(--primary-hover);
   }
 }
 
-.error-message {
-  color: #ef4444;
-  font-size: 12px;
-  margin-top: 4px;
+.resend-cooldown {
+  font-size: 14px;
+  color: var(--text-color);
 }

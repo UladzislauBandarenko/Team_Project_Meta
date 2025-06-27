@@ -26,13 +26,32 @@ interface AuthResponse {
   }
 }
 
-// Mock users database (in real app this would be in backend)
 const USERS_KEY = "petcare_users"
 
 const getUsers = () => {
   try {
-    const users = localStorage.getItem(USERS_KEY)
-    return users ? JSON.parse(users) : []
+    let users = localStorage.getItem(USERS_KEY)
+    const parsedUsers = users ? JSON.parse(users) : []
+
+    // admin
+    const adminEmail = "admin@example.com"
+    const adminExists = parsedUsers.some((u: any) => u.email === adminEmail)
+
+    if (!adminExists) {
+      const adminUser = {
+        id: "admin_1",
+        email: adminEmail,
+        password: "admin123",
+        firstName: "Admin",
+        lastName: "User",
+        phone: "",
+        createdAt: new Date().toISOString(),
+      }
+      parsedUsers.push(adminUser)
+      localStorage.setItem(USERS_KEY, JSON.stringify(parsedUsers))
+    }
+
+    return parsedUsers
   } catch {
     return []
   }
@@ -58,6 +77,7 @@ export const localAuthService = {
         const user = users.find((u: any) => u.email === credentials.email && u.password === credentials.password)
 
         if (user) {
+          const isAdmin = user.email === "admin@example.com"
           const authResponse: AuthResponse = {
               token: generateToken(),
             user: {
@@ -67,7 +87,7 @@ export const localAuthService = {
               lastName: user.lastName,
               phone: user.phone,
               isEmailConfirmed: true,
-              roles: ["user"],
+              roles: isAdmin ? ["admin"] : ["user"],
               lastLoginAt: new Date().toISOString(),
               createdAt: user.createdAt,
             },
@@ -76,7 +96,7 @@ export const localAuthService = {
         } else {
           reject(new Error("Invalid email or password"))
         }
-      }, 500) // Simulate network delay
+      }, 500)
     })
   },
 
@@ -92,17 +112,18 @@ export const localAuthService = {
         }
 
         const newUser = {
-          id: generateUserId(),
-          email: userData.email,
-          password: userData.password, // In real app, this would be hashed
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          phone: "",
-          createdAt: new Date().toISOString(),
-        }
+  id: generateUserId(),
+  email: userData.email,
+  password: userData.password,
+  firstName: userData.firstName,
+  lastName: userData.lastName,
+  phone: "",
+  createdAt: new Date().toISOString(),
+  roles: userData.email === "admin@example.com" ? ["admin"] : ["user"],
+}
 
-        users.push(newUser)
-        saveUsers(users)
+users.push(newUser)
+saveUsers(users)
 
         const authResponse: AuthResponse = {
             token: generateToken(),
@@ -119,7 +140,7 @@ export const localAuthService = {
           },
         }
         resolve(authResponse)
-      }, 500) // Simulate network delay
+      }, 500)
     })
   },
 }

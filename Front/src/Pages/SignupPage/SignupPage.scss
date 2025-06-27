@@ -89,6 +89,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-family: 'Poppins', sans-serif;
 
     &:hover:not(:disabled) {
       background-color: var(--primary-hover);
@@ -135,6 +136,8 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
   background-color: white;
   color: var(--text-dark);
   transition: border-color 0.3s;
@@ -146,6 +149,8 @@
 
   &::placeholder {
     color: #999;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
   }
 
   &.error {

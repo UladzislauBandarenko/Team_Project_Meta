@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
@@ -9,7 +11,8 @@ import type { CreateOrderDto } from "../../redux/order/types"
 import "./CheckoutPage.scss"
 
 interface ShippingData {
-  fullName: string
+  firstName: string
+  lastName: string
   streetAddress: string
   apartment: string
   city: string
@@ -64,9 +67,9 @@ export const CheckoutPage: React.FC = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { items, totalAmount } = useSelector((state: RootState) => state.cart)
-    const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
 
-    const [createOrder] = useCreateOrderMutation()
+  const [createOrder] = useCreateOrderMutation()
 
   const [currentStep, setCurrentStep] = useState(1)
   const [promoCode, setPromoCode] = useState("")
@@ -74,7 +77,8 @@ export const CheckoutPage: React.FC = () => {
   const [selectedShipping, setSelectedShipping] = useState("standard")
 
   const [shippingData, setShippingData] = useState<ShippingData>({
-    fullName: user ? `${user.firstName} ${user.lastName}` : "",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
     streetAddress: "",
     apartment: "",
     city: "",
@@ -129,7 +133,8 @@ export const CheckoutPage: React.FC = () => {
   const validateShipping = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!shippingData.fullName.trim()) newErrors.fullName = "Full name is required"
+    if (!shippingData.firstName.trim()) newErrors.firstName = "First name is required"
+    if (!shippingData.lastName.trim()) newErrors.lastName = "Last name is required"
     if (!shippingData.streetAddress.trim()) newErrors.streetAddress = "Street address is required"
     if (!shippingData.city.trim()) newErrors.city = "City is required"
     if (!shippingData.zipCode.trim()) newErrors.zipCode = "ZIP/Postal code is required"
@@ -170,36 +175,36 @@ export const CheckoutPage: React.FC = () => {
     }
   }
 
-    const handlePlaceOrder = async () => {
-        const orderNum = `ORD-${Date.now()}`
-        setOrderNumber(orderNum)
+  const handlePlaceOrder = async () => {
+    const orderNum = `ORD-${Date.now()}`
+    setOrderNumber(orderNum)
 
-        try {
-            const payload: CreateOrderDto = {
-                address: shippingData.streetAddress,
-                apartmentNumber: shippingData.apartment,
-                city: shippingData.city,
-                postalCode: shippingData.zipCode,
-                country: shippingData.country,
-                phoneNumber: shippingData.phoneNumber,
-                totalPrice: total,
-                status: "Pending",
-                deliveryServiceId: selectedShipping === "smartpost" ? 1 : selectedShipping === "dpd" ? 2 : 3,
-                orderItems: items.map((item) => ({
-                    productId: item.id,
-                    quantity: item.quantity,
-                    price: item.price,
-                })),
-            }
+    try {
+      const payload: CreateOrderDto = {
+        address: shippingData.streetAddress,
+        apartmentNumber: shippingData.apartment,
+        city: shippingData.city,
+        postalCode: shippingData.zipCode,
+        country: shippingData.country,
+        phoneNumber: shippingData.phoneNumber,
+        totalPrice: total,
+        status: "Pending",
+        deliveryServiceId: selectedShipping === "smartpost" ? 1 : selectedShipping === "dpd" ? 2 : 3,
+        orderItems: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      }
 
-            await createOrder(payload).unwrap()
-            dispatch(clearCart())
-            setCurrentStep(4)
-        } catch (error) {
-            console.error("Order submission failed:", error)
-            alert("Error placing the order. Please try again later.")
-        }
+      await createOrder(payload).unwrap()
+      dispatch(clearCart())
+      setCurrentStep(4)
+    } catch (error) {
+      console.error("Order submission failed:", error)
+      alert("Error placing the order. Please try again later.")
     }
+  }
 
   const subtotal = totalAmount
   const selectedShippingMethod = shippingMethods.find((method) => method.id === selectedShipping)
@@ -248,15 +253,27 @@ export const CheckoutPage: React.FC = () => {
                 <h2 className="checkout-section__title">Shipping Address</h2>
 
                 <form className="checkout-form">
-                  <div className="form-group">
-                    <label className="form-label">Full Name *</label>
-                    <input
-                      type="text"
-                      value={shippingData.fullName}
-                      onChange={(e) => setShippingData({ ...shippingData, fullName: e.target.value })}
-                      className={`form-input ${errors.fullName ? "error" : ""}`}
-                    />
-                    {errors.fullName && <span className="error-message">{errors.fullName}</span>}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">First Name *</label>
+                      <input
+                        type="text"
+                        value={shippingData.firstName}
+                        onChange={(e) => setShippingData({ ...shippingData, firstName: e.target.value })}
+                        className={`form-input ${errors.firstName ? "error" : ""}`}
+                      />
+                      {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Last Name *</label>
+                      <input
+                        type="text"
+                        value={shippingData.lastName}
+                        onChange={(e) => setShippingData({ ...shippingData, lastName: e.target.value })}
+                        className={`form-input ${errors.lastName ? "error" : ""}`}
+                      />
+                      {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+                    </div>
                   </div>
 
                   <div className="form-group">
@@ -533,10 +550,14 @@ export const CheckoutPage: React.FC = () => {
                       </button>
                     </div>
                     <div className="address-summary">
-                      <p>{shippingData.fullName}</p>
+                      <p>
+                        {shippingData.firstName} {shippingData.lastName}
+                      </p>
                       <p>{shippingData.streetAddress}</p>
                       {shippingData.apartment && <p>{shippingData.apartment}</p>}
-              
+                      <p>
+                        {shippingData.city}, {shippingData.zipCode}
+                      </p>
                       <p>{shippingData.country}</p>
                       <p>Phone: {shippingData.phoneNumber}</p>
                     </div>
@@ -738,10 +759,6 @@ export const CheckoutPage: React.FC = () => {
                   <div className="feature-item">
                     <span className="feature-item__icon">🔒</span>
                     <span className="feature-item__text">Secure Checkout</span>
-                  </div>
-                  <div className="feature-item">
-                    <span className="feature-item__icon">🚚</span>
-                    <span className="feature-item__text">Free Shipping on orders over $50</span>
                   </div>
                   <div className="feature-item">
                     <span className="feature-item__icon">❤️</span>

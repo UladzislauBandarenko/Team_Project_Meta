@@ -1,0 +1,252 @@
+.analytics-page {
+  padding: 0;
+
+  .analytics-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+
+    .analytics-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      &__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+
+      &.total-sales .analytics-card__icon {
+        background: #e3f2fd;
+      }
+
+      &.orders .analytics-card__icon {
+        background: #fff3e0;
+      }
+
+      &.average-order .analytics-card__icon {
+        background: #f3e5f5;
+      }
+
+      &__content {
+        flex: 1;
+      }
+
+      &__label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      &__number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      &__change {
+        font-size: 12px;
+        font-weight: 500;
+
+        &.positive {
+          color: #4caf50;
+        }
+
+        &.negative {
+          color: #f44336;
+        }
+      }
+    }
+  }
+
+  .sales-overview {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .overview-table {
+      .overview-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        padding: 12px 0;
+        border-bottom: 2px solid #f5f5f5;
+        font-weight: 600;
+        color: #666;
+        font-size: 14px;
+
+        .overview-col:last-child {
+          text-align: right;
+        }
+      }
+
+      .overview-body {
+        .overview-row {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          padding: 16px 0;
+          border-bottom: 1px solid #f5f5f5;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .overview-col {
+            font-size: 14px;
+
+            &:first-child {
+              color: #666;
+            }
+
+            &:last-child {
+              font-weight: 600;
+              color: #333;
+              text-align: right;
+              min-width: 100px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .top-products {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .products-analytics-table {
+      .products-analytics-header {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 2px solid #f5f5f5;
+        font-weight: 600;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .products-analytics-body {
+        .products-analytics-row {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+          gap: 16px;
+          padding: 16px 0;
+          border-bottom: 1px solid #f5f5f5;
+          align-items: center;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .products-analytics-col {
+            font-size: 14px;
+            color: #333;
+
+            &.product-info {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+
+              .product-image-small {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                object-fit: cover;
+                background: #f5f5f5;
+              }
+
+              .product-name {
+                font-weight: 500;
+              }
+            }
+
+            &:not(.product-info) {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design for analytics
+@media (max-width: 1024px) {
+  .analytics-page {
+    .analytics-summary {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .top-products .products-analytics-table {
+      .products-analytics-header,
+      .products-analytics-body .products-analytics-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .products-analytics-col:not(.product-info) {
+        display: none;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-page {
+    .analytics-summary .analytics-card {
+      padding: 16px;
+      gap: 12px;
+
+      &__icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      &__number {
+        font-size: 24px;
+      }
+    }
+
+    .sales-overview,
+    .top-products {
+      padding: 16px;
+    }
+  }
+}
