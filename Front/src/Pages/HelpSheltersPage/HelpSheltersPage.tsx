@@ -95,17 +95,17 @@ export const HelpSheltersPage: React.FC = () => {
         <div className="statistics__container">
           <div className="stat-card">
             <div className="stat-card__icon">🏠</div>
-            <div className="stat-card__number">124</div>
+            <div className="stat-card__number">4</div>
             <div className="stat-card__label">Shelters Supported</div>
           </div>
           <div className="stat-card">
             <div className="stat-card__icon">💰</div>
-            <div className="stat-card__number">$1.2M</div>
+            <div className="stat-card__number">€125.840</div>
             <div className="stat-card__label">Total Donations</div>
           </div>
           <div className="stat-card">
             <div className="stat-card__icon">🐾</div>
-            <div className="stat-card__number">5,280</div>
+            <div className="stat-card__number">1,357</div>
             <div className="stat-card__label">Animals Helped</div>
           </div>
         </div>
