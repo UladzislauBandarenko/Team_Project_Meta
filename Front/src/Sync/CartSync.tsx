@@ -46,6 +46,11 @@ export const CartSync = () => {
                         }
                     }
                 } else {
+                    if (!localItem.name || localItem.price <= 0) {
+                        console.warn("⚠️ Пропущен пустой товар при добавлении:", localItem)
+                        continue
+                    }
+
                     console.log("➕ Adding item", localItem)
                     try {
                         await addCartItem({
@@ -60,7 +65,10 @@ export const CartSync = () => {
 
             // === УДАЛЕНИЕ ===
             for (const backendItem of backendCart) {
-                const stillExists = cartItems.find((i) => i.id === backendItem.productId)
+                const stillExists = cartItems.some(
+                    (local) => local.backendId === backendItem.id
+                )
+
                 if (!stillExists) {
                     console.log("❌ Removing item from backend", backendItem)
                     try {
