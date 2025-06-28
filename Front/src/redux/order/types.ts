@@ -23,13 +23,26 @@ export interface OrderItemDto {
     productId: number;
     quantity: number;
     price: number;
+    productName: string;
+    imageBase64: string | null;
 }
 
 export interface OrderDto {
     id: number;
     userId: number;
     totalPrice: number;
+    deliveryServiceId: number;
+    trackingNumber: string;
     status: string;
-    createdDate: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    phoneNumber: string;
+    apartmentNumber: string;
     orderItems: OrderItemDto[];
+    createdDate: string;
+    lastUpdatedDate: string;
+    firstName: string;
+    lastName: string;
 }

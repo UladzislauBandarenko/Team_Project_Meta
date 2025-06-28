@@ -28,9 +28,6 @@ export const useCartInitializer = () => {
             return
         }
 
-        
-        
-
         (data as BackendCartItem[]).forEach((item) => {
             console.log("🛠 [CartInitializer] Первая инициализация корзины")
                 isInitializedRef.current = true

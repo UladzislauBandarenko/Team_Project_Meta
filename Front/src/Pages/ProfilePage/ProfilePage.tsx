@@ -7,6 +7,7 @@ import { logout } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./ProfilePage.scss"
 import { useAppDispatch } from "../../redux/store"
+import { useGetMyOrdersQuery } from "../../redux/order/orderApi"
 
 interface OrderItem {
   id: number
@@ -40,134 +41,8 @@ interface Review {
   rating: number
   comment: string
 }
-const mockOrders: Order[] = [
-  {
-    id: "ORD-12345",
-    userId: 1,
-    totalPrice: 124.97,
-    deliveryServiceId: 2,
-    trackingNumber: "DS19GT6PQY006",
-    status: "delivered",
-    address: "123 Main Street",
-    city: "Vilnius",
-    postalCode: "01234",
-    country: "Lithuania",
-    phoneNumber: "12344",
-    apartmentNumber: "4B",
-    orderItems: [
-      {
-        id: 11,
-        orderId: "ORD-12345",
-        productId: 34,
-        quantity: 2,
-        price: 39.99,
-        name: "Premium Dog Food - 5kg",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-      {
-        id: 12,
-        orderId: "ORD-12345",
-        productId: 35,
-        quantity: 1,
-        price: 24.99,
-        name: "Interactive Cat Toy Bundle",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-      {
-        id: 13,
-        orderId: "ORD-12345",
-        productId: 36,
-        quantity: 1,
-        price: 19.99,
-        name: "Dog Leash & Collar Set",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-    ],
-    createdDate: "2025-05-01T10:00:55.264532Z",
-    lastUpdatedDate: "2025-05-03T17:00:00Z",
-  },
-  {
-    id: "ORD-12344",
-    userId: 1,
-    totalPrice: 89.99,
-    deliveryServiceId: 1,
-    trackingNumber: "SP20HT7RQZ007",
-    status: "delivered",
-    address: "123 Main Street",
-    city: "Vilnius",
-    postalCode: "01234",
-    country: "Lithuania",
-    phoneNumber: "12344",
-    apartmentNumber: "4B",
-    orderItems: [
-      {
-        id: 14,
-        orderId: "ORD-12344",
-        productId: 37,
-        quantity: 1,
-        price: 34.99,
-        name: "Cat Scratching Post",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-      {
-        id: 15,
-        orderId: "ORD-12344",
-        productId: 38,
-        quantity: 1,
-        price: 54.99,
-        name: "Automatic Pet Feeder",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-    ],
-    createdDate: "2025-04-15T08:30:20.123456Z",
-    lastUpdatedDate: "2025-04-17T14:20:00Z",
-  },
-  {
-    id: "ORD-12343",
-    userId: 1,
-    totalPrice: 94.98,
-    deliveryServiceId: 3,
-    trackingNumber: "OM21IT8SRX008",
-    status: "delivered",
-    address: "123 Main Street",
-    city: "Vilnius",
-    postalCode: "01234",
-    country: "Lithuania",
-    phoneNumber: "12344",
-    apartmentNumber: "4B",
-    orderItems: [
-      {
-        id: 16,
-        orderId: "ORD-12343",
-        productId: 39,
-        quantity: 1,
-        price: 59.99,
-        name: "Orthopedic Dog Bed - L",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-      {
-        id: 17,
-        orderId: "ORD-12343",
-        productId: 40,
-        quantity: 1,
-        price: 19.99,
-        name: "Dog Dental Care Kit",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-      {
-        id: 18,
-        orderId: "ORD-12343",
-        productId: 41,
-        quantity: 1,
-        price: 14.99,
-        name: "Premium Cat Food - 1.5kg",
-        image: "/placeholder.svg?height=60&width=60",
-      },
-    ],
-    createdDate: "2025-03-28T15:45:10.987654Z",
-    lastUpdatedDate: "2025-03-30T11:15:00Z",
-  },
-]
+
+
 
 const deliveryServices = {
   1: { name: "Smartpost pickup point", cost: 0 },
@@ -178,7 +53,9 @@ const deliveryServices = {
 function ProfilePage() {
     const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const user = useSelector((state: RootState) => state.auth.user)
+    const user = useSelector((state: RootState) => state.auth.user)
+
+    const { data: orders = [], isLoading } = useGetMyOrdersQuery()
 
   useEffect(() => {
     if (!user) {
@@ -277,7 +154,7 @@ function ProfilePage() {
     const reviewKey = `${selectedOrder?.id}-${productId}`
     const newReviews = { ...reviews, [reviewKey]: { rating, comment } }
     setReviews(newReviews)
-    localStorage.setItem("productReviews", JSON.stringify(newReviews))
+      localStorage.setItem("productReviews", JSON.stringify(newReviews))
   }
 
   const getProductReview = (productId: number) => {
@@ -416,7 +293,7 @@ function ProfilePage() {
             <div className="orders-section">
               <h3 className="section-title">Order History</h3>
               <div className="orders-list">
-                {mockOrders.map((order) => (
+                {orders.map((order) => (
                   <div key={order.id} className="order-item">
                    <div className="order-item__header">
                       <div className="order-item__id-date">
