@@ -8,7 +8,8 @@ import { clearCredentials } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./SellerProfile.scss"
 import AnalyticsPage from "./AnalyticsPage"
-import { useGetSellerProductsQuery, useCreateProductMutation, useUpdateProductMutation } from "../../redux/products/productsApi"
+import { useGetSellerProductsQuery, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation } from "../../redux/products/productsApi"
+import { useGetSellerOrdersQuery } from "../../redux/order/orderApi"
 
 interface Product {
     id: number
@@ -22,127 +23,33 @@ interface Product {
 }
 
 interface Order {
-  id: string
-  productName: string
-  quantity: number
-  price: number
-  customerName: string
-  status: string
-  orderDate: string
-  totalAmount: number
-  customerEmail?: string
-  customerPhone?: string
-  shippingAddress?: string
-  shippingCompany?: string
-  trackingNumber?: string
-  orderItems?: Array<{
-    name: string
-    price: number
-    quantity: number
-    image: string
-  }>
+    id: number
+    userId: number
+    totalPrice: number
+    deliveryServiceId: number
+    trackingNumber: string
+    status: string
+    address: string
+    city: string
+    postalCode: string
+    country: string
+    phoneNumber: string
+    apartmentNumber: string
+    createdDate: string
+    lastUpdatedDate: string
+    firstName: string
+    lastName: string
+    orderItems: {
+        id: number
+        orderId: number
+        productId: number
+        quantity: number
+        price: number
+        productName: string
+        imageBase64: string
+    }[]
 }
 
-const mockOrders: Order[] = [
-  {
-    id: "ORD-7829",
-    productName: "Premium Dog Food",
-    quantity: 3,
-    price: 41.66,
-    customerName: "Emilija Kazlauskienė",
-    status: "Processing",
-    orderDate: "16.06.2025",
-    totalAmount: 189.8,
-    customerEmail: "emilija.kazlauskiene@gmail.com",
-    customerPhone: "+370 612 34567",
-    shippingAddress: "Gedimino pr. 15-23, Vilnius 01103, Lithuania",
-    shippingCompany: "DPD Lietuva",
-    trackingNumber: "DPD7829456123",
-    orderItems: [
-      { name: "Premium Dog Food", price: 39.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Interactive Cat Toy", price: 24.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Orthopedic Dog Bed", price: 59.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7830",
-    productName: "Interactive Cat Toy",
-    quantity: 2,
-    price: 79.99,
-    customerName: "Michał Kowalski",
-    status: "Shipped",
-    orderDate: "15.06.2025",
-    totalAmount: 159.98,
-    customerEmail: "michal.kowalski@wp.pl",
-    customerPhone: "+48 601 234 567",
-    shippingAddress: "ul. Marszałkowska 84/92, 00-514 Warszawa, Poland",
-    shippingCompany: "InPost",
-    trackingNumber: "INP7830456789",
-    orderItems: [
-      { name: "Interactive Cat Toy", price: 24.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Cat Scratching Post", price: 34.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Premium Cat Food", price: 29.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7831",
-    productName: "Orthopedic Dog Bed",
-    quantity: 1,
-    price: 159.98,
-    customerName: "Līga Bērziņa",
-    status: "Delivered",
-    orderDate: "14.06.2025",
-    totalAmount: 159.98,
-    customerEmail: "liga.berzina@inbox.lv",
-    customerPhone: "+371 2612 3456",
-    shippingAddress: "Brīvības iela 72, Rīga, LV-1011, Latvia",
-    shippingCompany: "Omniva",
-    trackingNumber: "OMN7831567890",
-    orderItems: [
-      { name: "Orthopedic Dog Bed", price: 89.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Dog Leash Premium", price: 34.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Dog Treats", price: 19.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7832",
-    productName: "Automatic Pet Feeder",
-    quantity: 1,
-    price: 124.99,
-    customerName: "Kadri Tamm",
-    status: "Pending",
-    orderDate: "13.06.2025",
-    totalAmount: 124.99,
-    customerEmail: "kadri.tamm@gmail.com",
-    customerPhone: "+372 5123 4567",
-    shippingAddress: "Narva mnt 7d, 10117 Tallinn, Estonia",
-    shippingCompany: "Smartpost",
-    trackingNumber: "SMT7832678901",
-    orderItems: [
-      { name: "Automatic Pet Feeder", price: 79.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Pet Water Fountain", price: 44.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7833",
-    productName: "Cat Scratching Post",
-    quantity: 2,
-    price: 94.97,
-    customerName: "Andrius Petrauskas",
-    status: "Delivered",
-    orderDate: "12.06.2025",
-    totalAmount: 94.97,
-    customerEmail: "andrius.petrauskas@delfi.lt",
-    customerPhone: "+370 698 76543",
-    shippingAddress: "Savanorių pr. 284, Kaunas 50131, Lithuania",
-    shippingCompany: "LP Express",
-    trackingNumber: "LPE7833789012",
-    orderItems: [
-      { name: "Cat Scratching Post", price: 34.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Cat Toys Set", price: 24.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-]
 
 const categories = [
   "Dog Products",
@@ -161,7 +68,7 @@ const SellerProfile: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("products")
     const [products, setProducts] = useState<Product[]>([])
-  const [orders] = useState<Order[]>(mockOrders)
+    const { data: orders = [], isLoading: isOrdersLoading } = useGetSellerOrdersQuery();
   const [showAddProduct, setShowAddProduct] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -249,13 +156,14 @@ const SellerProfile: React.FC = () => {
     }
 
     // Apply search filter
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(
-        (order) =>
-          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    }
+      if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase()
+          filtered = filtered.filter(
+              (order) =>
+                  order.id.toString().includes(query) ||
+                  `${order.firstName} ${order.lastName}`.toLowerCase().includes(query)
+          )
+      }
 
     return filtered
   }, [orders, orderFilter, searchQuery])
@@ -263,10 +171,10 @@ const SellerProfile: React.FC = () => {
   // Calculate order statistics
   const orderStats = useMemo(() => {
     const total = orders.length
-    const pending = orders.filter((order) => order.status === "Pending").length
-    const shipped = orders.filter((order) => order.status === "Shipped").length
-    const delivered = orders.filter((order) => order.status === "Delivered").length
-    const processing = orders.filter((order) => order.status === "Processing").length
+      const pending = orders.filter((order) => order.status.toLowerCase() === "pending").length
+      const shipped = orders.filter((order) => order.status.toLowerCase() === "shipped").length
+      const delivered = orders.filter((order) => order.status.toLowerCase() === "delivered").length
+      const processing = orders.filter((order) => order.status.toLowerCase() === "processing").length
 
     return { total, pending, shipped, delivered, processing }
   }, [orders])
@@ -381,11 +289,20 @@ const SellerProfile: React.FC = () => {
     }
 
 
-  const handleDeleteProduct = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((p) => p.id !== id))
+    const [deleteProduct] = useDeleteProductMutation()
+
+    const handleDeleteProduct = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this product?")) return
+
+        try {
+            await deleteProduct(id).unwrap()
+            await refetch()
+        } catch (err) {
+            console.error("Delete product error:", err)
+            alert("Error deleting product.")
+        }
     }
-  }
+
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -416,7 +333,7 @@ const SellerProfile: React.FC = () => {
   // Analytics data
   const totalProducts = products.length
   const totalOrders = orders.length
-  const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0)
+    const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0)
   const lowStockProducts = products.filter((p) => p.stock < 10).length
 
   if (!user || user.role !== "seller") {
@@ -637,10 +554,10 @@ const SellerProfile: React.FC = () => {
                       filteredOrders.map((order) => (
                         <div key={order.id} className="table-row">
                           <div className="table-col order-id">{order.id}</div>
-                          <div className="table-col">{order.customerName}</div>
-                          <div className="table-col">{order.orderDate}</div>
-                          <div className="table-col">{order.quantity} items</div>
-                          <div className="table-col">€{order.totalAmount.toFixed(2)}</div>
+                              <div className="table-col">{order.firstName} {order.lastName}</div>
+                              <div className="table-col">{new Date(order.createdDate).toLocaleDateString()}</div>
+                              <div className="table-col">{order.orderItems.length} items</div>
+                              <div className="table-col">€{order.totalPrice.toFixed(2)}</div>
                           <div className="table-col">
                             <span className={`status-badge status-${order.status.toLowerCase()}`}>{order.status}</span>
                           </div>

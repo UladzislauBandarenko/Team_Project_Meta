@@ -30,6 +30,12 @@ export const productsApi = createApi({
                 body: formData,
             }),
         }),
+        deleteProduct: builder.mutation<void, number>({
+            query: (id) => ({
+                url: `Products/${id}`,
+                method: "DELETE",
+            }),
+        }),
     }),
 })
 
@@ -37,4 +43,5 @@ export const {
     useGetSellerProductsQuery,
     useCreateProductMutation,
     useUpdateProductMutation,
+    useDeleteProductMutation,
 } = productsApi
