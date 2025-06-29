@@ -8,16 +8,17 @@ import { clearCredentials } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./SellerProfile.scss"
 import AnalyticsPage from "./AnalyticsPage"
+import { useGetSellerProductsQuery, useCreateProductMutation, useUpdateProductMutation } from "../../redux/products/productsApi"
 
 interface Product {
-  id: number
-  name: string
-  category: string
-  price: number
-  stock: number
-  image: string
-  description: string
-  sellerId: number
+    id: number
+    name: string
+    category: string
+    price: number
+    stock: number
+    image: string
+    description: string
+    sellerId: number
 }
 
 interface Order {
@@ -41,60 +42,6 @@ interface Order {
     image: string
   }>
 }
-
-// Mock data for demonstration
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: "Premium Dog Food",
-    category: "Dog Products",
-    price: 39.99,
-    stock: 45,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "High-quality premium dog food for all breeds",
-    sellerId: 1,
-  },
-  {
-    id: 2,
-    name: "Interactive Cat Toy",
-    category: "Cat Products",
-    price: 24.99,
-    stock: 32,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Interactive toy to keep cats entertained",
-    sellerId: 1,
-  },
-  {
-    id: 3,
-    name: "Orthopedic Dog Bed",
-    category: "Dog Products",
-    price: 59.99,
-    stock: 18,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Comfortable orthopedic bed for dogs",
-    sellerId: 1,
-  },
-  {
-    id: 4,
-    name: "Automatic Pet Feeder",
-    category: "Dog Products",
-    price: 79.99,
-    stock: 12,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Automatic feeder with timer functionality",
-    sellerId: 1,
-  },
-  {
-    id: 5,
-    name: "Cat Scratching Post",
-    category: "Cat Products",
-    price: 34.99,
-    stock: 27,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Durable scratching post for cats",
-    sellerId: 1,
-  },
-]
 
 const mockOrders: Order[] = [
   {
@@ -213,7 +160,7 @@ const SellerProfile: React.FC = () => {
   const location = useLocation()
 
   const [activeTab, setActiveTab] = useState("products")
-  const [products, setProducts] = useState<Product[]>(mockProducts)
+    const [products, setProducts] = useState<Product[]>([])
   const [orders] = useState<Order[]>(mockOrders)
   const [showAddProduct, setShowAddProduct] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -221,14 +168,14 @@ const SellerProfile: React.FC = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const itemsPerPage = 5
 
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    category: "Dog Products",
-    price: 0,
-    stock: 0,
-    description: "",
-    imageFile: null as File | null,
-  })
+    const [newProduct, setNewProduct] = useState({
+        name: "",
+        categoryId: 1, // 👈 по умолчанию первая категория
+        price: 0,
+        stock: 0,
+        description: "",
+        imageFile: null as File | null,
+    })
 
   const [imagePreview, setImagePreview] = useState<string>("")
 
@@ -236,7 +183,49 @@ const SellerProfile: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("")
 
   const [showOrderDetails, setShowOrderDetails] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+    const [categories, setCategories] = useState<{ id: number; categorieName: string }[]>([])
+
+    const { data: sellerData, isLoading, error, refetch } = useGetSellerProductsQuery()
+    const [createProduct, { isLoading: isCreating }] = useCreateProductMutation()
+
+
+    useEffect(() => {
+        if (sellerData && user?.role === "seller") {
+            const mappedProducts = sellerData.map((p: any) => ({
+                id: p.id,
+                name: p.productName,
+                category: p.categoryName,
+                price: p.price,
+                stock: p.stockQuantity,
+                image: p.imageBase64
+                    ? `data:image/png;base64,${p.imageBase64}`
+                    : "/placeholder.svg",
+                description: p.productDescription,
+                sellerId: user.id,
+            }))
+            setProducts(mappedProducts)
+        }
+    }, [sellerData, user])
+
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch("http://localhost:5278/api/Categories")
+                if (!response.ok) throw new Error("Failed to load categories")
+
+                const data = await response.json()
+                setCategories(data)
+            } catch (error) {
+                console.error("Error loading categories:", error)
+            }
+        }
+
+        fetchCategories()
+    }, [])
+
 
   useEffect(() => {
     if (!user || user.role !== "seller") {
@@ -299,35 +288,50 @@ const SellerProfile: React.FC = () => {
       }
       reader.readAsDataURL(file)
     }
-  }
-
-  const handleAddProduct = () => {
-    if (newProduct.name && newProduct.price > 0) {
-      const product: Product = {
-        id: Date.now(),
-        ...newProduct,
-        sellerId: user?.id || 1,
-        image: imagePreview || "/placeholder.svg?height=60&width=60",
-      }
-      setProducts([...products, product])
-      setNewProduct({
-        name: "",
-        category: "Dog Products",
-        price: 0,
-        stock: 0,
-        description: "",
-        imageFile: null,
-      })
-      setImagePreview("")
-      setShowAddProduct(false)
     }
-  }
+
+    const handleAddProduct = async () => {
+        if (!newProduct.name || newProduct.price <= 0 || !newProduct.imageFile) {
+            alert("Please fill in all required fields and upload an image.")
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append("productName", newProduct.name)
+            formData.append("categoryId", newProduct.categoryId.toString())
+            formData.append("price", newProduct.price.toString())
+            formData.append("stockQuantity", newProduct.stock.toString())
+            formData.append("productDescription", newProduct.description)
+            formData.append("imageFile", newProduct.imageFile)
+
+            const added = await createProduct(formData).unwrap()
+            console.log("Product added:", added)
+
+            setShowAddProduct(false)
+            setEditingProduct(null)
+            setNewProduct({
+                name: "",
+                categoryId: 1,
+                price: 0,
+                stock: 0,
+                description: "",
+                imageFile: null,
+            })
+            setImagePreview("")
+            await refetch()
+        } catch (err) {
+            console.error("Add product error:", err)
+            alert("Error adding product.")
+        }
+    }
+
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product)
     setNewProduct({
       name: product.name,
-      category: product.category,
+        categoryId: categories.find((cat) => cat.categorieName === product.category)?.id || 1,
       price: product.price,
       stock: product.stock,
       description: product.description,
@@ -337,32 +341,45 @@ const SellerProfile: React.FC = () => {
     setShowAddProduct(true)
   }
 
-  const handleUpdateProduct = () => {
-    if (editingProduct && newProduct.name && newProduct.price > 0) {
-      setProducts(
-        products.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...editingProduct,
-                ...newProduct,
-                image: imagePreview || editingProduct.image,
-              }
-            : p,
-        ),
-      )
-      setEditingProduct(null)
-      setNewProduct({
-        name: "",
-        category: "Dog Products",
-        price: 0,
-        stock: 0,
-        description: "",
-        imageFile: null,
-      })
-      setImagePreview("")
-      setShowAddProduct(false)
+    const [updateProduct] = useUpdateProductMutation()
+
+    const handleUpdateProduct = async () => {
+        if (!editingProduct || !newProduct.name || newProduct.price <= 0) {
+            alert("Please fill in all required fields.")
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append("productName", newProduct.name)
+            formData.append("categoryId", newProduct.categoryId.toString())
+            formData.append("price", newProduct.price.toString())
+            formData.append("stockQuantity", newProduct.stock.toString())
+            formData.append("productDescription", newProduct.description)
+            if (newProduct.imageFile) {
+                formData.append("imageFile", newProduct.imageFile)
+            }
+
+            await updateProduct({ id: editingProduct.id, formData }).unwrap()
+
+            setEditingProduct(null)
+            setNewProduct({
+                name: "",
+                categoryId: 1,
+                price: 0,
+                stock: 0,
+                description: "",
+                imageFile: null,
+            })
+            setImagePreview("")
+            setShowAddProduct(false)
+            await refetch()
+        } catch (err) {
+            console.error("Update product error:", err)
+            alert("Error updating product.")
+        }
     }
-  }
+
 
   const handleDeleteProduct = (id: number) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -741,7 +758,7 @@ const SellerProfile: React.FC = () => {
                   setEditingProduct(null)
                   setNewProduct({
                     name: "",
-                    category: "Dog Products",
+                      categoryId: 1,
                     price: 0,
                     stock: 0,
                     description: "",
@@ -764,20 +781,27 @@ const SellerProfile: React.FC = () => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Category *</label>
-                <select
-                  value={newProduct.category}
-                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                          <div className="form-group">
+                              <label htmlFor="category">Category</label>
+                              <select
+                                  id="category"
+                                  name="categoryId"
+                                  value={newProduct.categoryId}
+                                  onChange={(e) =>
+                                      setNewProduct((prev) => ({
+                                          ...prev,
+                                          categoryId: Number(e.target.value),
+                                      }))
+                                  }
+                                  className="form-input"
+                              >
+                                  {categories.map((cat) => (
+                                      <option key={cat.id} value={cat.id}>
+                                          {cat.categorieName}
+                                      </option>
+                                  ))}
+                              </select>
+                          </div>
 
               <div className="form-row">
                 <div className="form-group">
@@ -841,7 +865,7 @@ const SellerProfile: React.FC = () => {
                   setEditingProduct(null)
                   setNewProduct({
                     name: "",
-                    category: "Dog Products",
+                      categoryId: 1,
                     price: 0,
                     stock: 0,
                     description: "",

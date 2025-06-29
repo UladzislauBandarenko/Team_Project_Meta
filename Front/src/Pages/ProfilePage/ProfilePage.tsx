@@ -160,7 +160,7 @@ function ProfilePage() {
   const getProductReview = (productId: number) => {
     const reviewKey = `${selectedOrder?.id}-${productId}`
     return reviews[reviewKey] || null
-  }
+    }
 
   return (
     <div className="profile-page">
