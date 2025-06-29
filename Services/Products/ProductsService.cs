@@ -169,12 +169,24 @@ namespace Team_Project_Meta.Services.Products
             if (role == "seller" && product.SellerId != userId)
                 return false;
 
-            product.ProductName = dto.ProductName;
-            product.ProductDescription = dto.ProductDescription;
-            product.ImageData = imageData;
-            product.Price = dto.Price;
-            product.CategoryId = dto.CategoryId;
-            product.StockQuantity = dto.StockQuantity;
+            // Обновляем только если есть изменения
+            if (!string.IsNullOrWhiteSpace(dto.ProductName))
+                product.ProductName = dto.ProductName;
+
+            if (!string.IsNullOrWhiteSpace(dto.ProductDescription))
+                product.ProductDescription = dto.ProductDescription;
+
+            if (dto.Price.HasValue)
+                product.Price = dto.Price.Value;
+
+            if (dto.CategoryId.HasValue)
+                product.CategoryId = dto.CategoryId.Value;
+
+            if (dto.StockQuantity.HasValue)
+                product.StockQuantity = dto.StockQuantity.Value;
+
+            if (imageData != null)
+                product.ImageData = imageData;
 
             await _context.SaveChangesAsync();
             return true;
