@@ -1,8 +1,9 @@
+"use client"
 
-import React, { useState, useEffect } from "react"
-import { useSelector, useDispatch } from "react-redux"
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
-import { clearCredentials } from "../../redux/auth/authSlice"
 import { logout } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./ProfilePage.scss"
@@ -42,8 +43,6 @@ interface Review {
   comment: string
 }
 
-
-
 const deliveryServices = {
   1: { name: "Smartpost pickup point", cost: 0 },
   2: { name: "DPD parcel machine", cost: 2.79 },
@@ -51,11 +50,35 @@ const deliveryServices = {
 }
 
 function ProfilePage() {
-    const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
-    const user = useSelector((state: RootState) => state.auth.user)
+  const user = useSelector((state: RootState) => state.auth.user)
 
-    const { data: orders = [], isLoading } = useGetMyOrdersQuery()
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [isEditingAddress, setIsEditingAddress] = useState(false)
+
+  const [profileData, setProfileData] = useState(() => {
+    const saved = localStorage.getItem("userProfile")
+    return saved
+      ? JSON.parse(saved)
+      : { firstName: user.firstName || "", lastName: user.lastName || "", email: user.email || "" }
+  })
+
+  const [addressData, setAddressData] = useState(() => {
+    const saved = localStorage.getItem("userAddress")
+    return saved
+      ? JSON.parse(saved)
+      : { address: "", apartmentNumber: "", city: "", postalCode: "", country: "", phone: "" }
+  })
+
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [showOrderDetails, setShowOrderDetails] = useState(false)
+  const [reviews, setReviews] = useState<Record<string, Review>>(() => {
+    const saved = localStorage.getItem("productReviews")
+    return saved ? JSON.parse(saved) : {}
+  })
+
+  const { data: orders = [], isLoading } = useGetMyOrdersQuery()
 
   useEffect(() => {
     if (!user) {
@@ -67,47 +90,8 @@ function ProfilePage() {
     }
   }, [user, navigate])
 
-  if (!user || user.role !== "buyer") {
-    return <div className="profile-page__loading">Loading profile...</div>
-  }
-
-  const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [isEditingAddress, setIsEditingAddress] = useState(false)
-
-  const [profileData, setProfileData] = useState(() => {
-    const saved = localStorage.getItem("userProfile")
-    return saved
-      ? JSON.parse(saved)
-      : {
-          firstName: user.firstName || "",
-          lastName: user.lastName || "",
-          email: user.email || "",
-        }
-  })
-
-  const [addressData, setAddressData] = useState(() => {
-    const saved = localStorage.getItem("userAddress")
-    return saved
-      ? JSON.parse(saved)
-      : {
-          address: "",
-          apartmentNumber: "",
-          city: "",
-          postalCode: "",
-          country: "",
-          phone: "",
-        }
-  })
-
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [showOrderDetails, setShowOrderDetails] = useState(false)
-  const [reviews, setReviews] = useState<Record<string, Review>>(() => {
-    const saved = localStorage.getItem("productReviews")
-    return saved ? JSON.parse(saved) : {}
-  })
-
-    function handleLogout() {
-      dispatch(logout())
+  const handleLogout = () => {
+    dispatch(logout())
     navigate("/")
   }
 
@@ -154,12 +138,16 @@ function ProfilePage() {
     const reviewKey = `${selectedOrder?.id}-${productId}`
     const newReviews = { ...reviews, [reviewKey]: { rating, comment } }
     setReviews(newReviews)
-      localStorage.setItem("productReviews", JSON.stringify(newReviews))
+    localStorage.setItem("productReviews", JSON.stringify(newReviews))
   }
 
   const getProductReview = (productId: number) => {
     const reviewKey = `${selectedOrder?.id}-${productId}`
     return reviews[reviewKey] || null
+  }
+
+  if (!user || user.role !== "buyer") {
+    return <div className="profile-page__loading">Loading profile...</div>
   }
 
   return (
@@ -168,7 +156,6 @@ function ProfilePage() {
         <h1 className="profile-page__title">My Profile</h1>
         <div className="profile-page__content">
           <div className="profile-page__main">
-            
             {/* Profile Section */}
             <div className="profile-section">
               <div className="profile-header">
@@ -271,7 +258,10 @@ function ProfilePage() {
               ) : (
                 <div className="address-info">
                   <p>
-                    <strong>Address:</strong> {addressData.address}, Apt. {addressData.apartmentNumber}
+                    <strong>Address:</strong> {addressData.address}
+                  </p>
+                  <p>
+                    <strong>Apartment:</strong> {addressData.apartmentNumber || "Not specified"}
                   </p>
                   <p>
                     <strong>City:</strong> {addressData.city}
@@ -295,12 +285,12 @@ function ProfilePage() {
               <div className="orders-list">
                 {orders.map((order) => (
                   <div key={order.id} className="order-item">
-                   <div className="order-item__header">
+                    <div className="order-item__header">
                       <div className="order-item__id-date">
-                          <span className="order-item__id">{order.id}</span>
-                          <span className="order-item__date">{formatDate(order.createdDate)}</span>
-                        </div>
+                        <span className="order-item__id">{order.id}</span>
+                        <span className="order-item__date">{formatDate(order.createdDate)}</span>
                       </div>
+                    </div>
 
                     <div className="order-item__details">
                       <div className="order-item__info">
