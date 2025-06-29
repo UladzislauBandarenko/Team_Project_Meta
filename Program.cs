@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 using Team_Project_Meta.Data;
 using Team_Project_Meta.DTOs.Products;
@@ -93,7 +94,8 @@ builder.Services.AddAuthentication("Bearer")
             ValidAudience = config["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(config["Jwt:Key"]!)
-            )
+            ),
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
