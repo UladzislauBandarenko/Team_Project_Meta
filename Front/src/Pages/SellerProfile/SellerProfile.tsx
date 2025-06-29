@@ -8,194 +8,49 @@ import { clearCredentials } from "../../redux/auth/authSlice"
 import type { RootState } from "../../redux/store"
 import "./SellerProfile.scss"
 import AnalyticsPage from "./AnalyticsPage"
+import { useGetSellerProductsQuery, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation } from "../../redux/products/productsApi"
+import { useGetSellerOrdersQuery } from "../../redux/order/orderApi"
+import { useGetCurrentUserQuery } from "../../redux/auth/api"
 
 interface Product {
-  id: number
-  name: string
-  category: string
-  price: number
-  stock: number
-  image: string
-  description: string
-  sellerId: number
+    id: number
+    name: string
+    category: string
+    price: number
+    stock: number
+    image: string
+    description: string
+    sellerId: number
 }
 
 interface Order {
-  id: string
-  productName: string
-  quantity: number
-  price: number
-  customerName: string
-  status: string
-  orderDate: string
-  totalAmount: number
-  customerEmail?: string
-  customerPhone?: string
-  shippingAddress?: string
-  shippingCompany?: string
-  trackingNumber?: string
-  orderItems?: Array<{
-    name: string
-    price: number
-    quantity: number
-    image: string
-  }>
+    id: number
+    userId: number
+    totalPrice: number
+    deliveryServiceId: number
+    trackingNumber: string
+    status: string
+    address: string
+    city: string
+    postalCode: string
+    country: string
+    phoneNumber: string
+    apartmentNumber: string
+    createdDate: string
+    lastUpdatedDate: string
+    firstName: string
+    lastName: string
+    orderItems: {
+        id: number
+        orderId: number
+        productId: number
+        quantity: number
+        price: number
+        productName: string
+        imageBase64: string
+    }[]
 }
 
-// Mock data for demonstration
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: "Premium Dog Food",
-    category: "Dog Products",
-    price: 39.99,
-    stock: 45,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "High-quality premium dog food for all breeds",
-    sellerId: 1,
-  },
-  {
-    id: 2,
-    name: "Interactive Cat Toy",
-    category: "Cat Products",
-    price: 24.99,
-    stock: 32,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Interactive toy to keep cats entertained",
-    sellerId: 1,
-  },
-  {
-    id: 3,
-    name: "Orthopedic Dog Bed",
-    category: "Dog Products",
-    price: 59.99,
-    stock: 18,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Comfortable orthopedic bed for dogs",
-    sellerId: 1,
-  },
-  {
-    id: 4,
-    name: "Automatic Pet Feeder",
-    category: "Dog Products",
-    price: 79.99,
-    stock: 12,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Automatic feeder with timer functionality",
-    sellerId: 1,
-  },
-  {
-    id: 5,
-    name: "Cat Scratching Post",
-    category: "Cat Products",
-    price: 34.99,
-    stock: 27,
-    image: "/placeholder.svg?height=60&width=60",
-    description: "Durable scratching post for cats",
-    sellerId: 1,
-  },
-]
-
-const mockOrders: Order[] = [
-  {
-    id: "ORD-7829",
-    productName: "Premium Dog Food",
-    quantity: 3,
-    price: 41.66,
-    customerName: "Emilija Kazlauskienė",
-    status: "Processing",
-    orderDate: "16.06.2025",
-    totalAmount: 189.8,
-    customerEmail: "emilija.kazlauskiene@gmail.com",
-    customerPhone: "+370 612 34567",
-    shippingAddress: "Gedimino pr. 15-23, Vilnius 01103, Lithuania",
-    shippingCompany: "DPD Lietuva",
-    trackingNumber: "DPD7829456123",
-    orderItems: [
-      { name: "Premium Dog Food", price: 39.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Interactive Cat Toy", price: 24.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Orthopedic Dog Bed", price: 59.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7830",
-    productName: "Interactive Cat Toy",
-    quantity: 2,
-    price: 79.99,
-    customerName: "Michał Kowalski",
-    status: "Shipped",
-    orderDate: "15.06.2025",
-    totalAmount: 159.98,
-    customerEmail: "michal.kowalski@wp.pl",
-    customerPhone: "+48 601 234 567",
-    shippingAddress: "ul. Marszałkowska 84/92, 00-514 Warszawa, Poland",
-    shippingCompany: "InPost",
-    trackingNumber: "INP7830456789",
-    orderItems: [
-      { name: "Interactive Cat Toy", price: 24.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Cat Scratching Post", price: 34.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Premium Cat Food", price: 29.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7831",
-    productName: "Orthopedic Dog Bed",
-    quantity: 1,
-    price: 159.98,
-    customerName: "Līga Bērziņa",
-    status: "Delivered",
-    orderDate: "14.06.2025",
-    totalAmount: 159.98,
-    customerEmail: "liga.berzina@inbox.lv",
-    customerPhone: "+371 2612 3456",
-    shippingAddress: "Brīvības iela 72, Rīga, LV-1011, Latvia",
-    shippingCompany: "Omniva",
-    trackingNumber: "OMN7831567890",
-    orderItems: [
-      { name: "Orthopedic Dog Bed", price: 89.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Dog Leash Premium", price: 34.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Dog Treats", price: 19.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7832",
-    productName: "Automatic Pet Feeder",
-    quantity: 1,
-    price: 124.99,
-    customerName: "Kadri Tamm",
-    status: "Pending",
-    orderDate: "13.06.2025",
-    totalAmount: 124.99,
-    customerEmail: "kadri.tamm@gmail.com",
-    customerPhone: "+372 5123 4567",
-    shippingAddress: "Narva mnt 7d, 10117 Tallinn, Estonia",
-    shippingCompany: "Smartpost",
-    trackingNumber: "SMT7832678901",
-    orderItems: [
-      { name: "Automatic Pet Feeder", price: 79.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Pet Water Fountain", price: 44.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-  {
-    id: "ORD-7833",
-    productName: "Cat Scratching Post",
-    quantity: 2,
-    price: 94.97,
-    customerName: "Andrius Petrauskas",
-    status: "Delivered",
-    orderDate: "12.06.2025",
-    totalAmount: 94.97,
-    customerEmail: "andrius.petrauskas@delfi.lt",
-    customerPhone: "+370 698 76543",
-    shippingAddress: "Savanorių pr. 284, Kaunas 50131, Lithuania",
-    shippingCompany: "LP Express",
-    trackingNumber: "LPE7833789012",
-    orderItems: [
-      { name: "Cat Scratching Post", price: 34.99, quantity: 2, image: "/placeholder.svg?height=50&width=50" },
-      { name: "Cat Toys Set", price: 24.99, quantity: 1, image: "/placeholder.svg?height=50&width=50" },
-    ],
-  },
-]
 
 const categories = [
   "Dog Products",
@@ -209,26 +64,26 @@ const categories = [
 const SellerProfile: React.FC = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const user = useSelector((state: RootState) => state.auth.user)
+    const { data: user, isLoading: isUserLoading } = useGetCurrentUserQuery()
   const location = useLocation()
 
   const [activeTab, setActiveTab] = useState("products")
-  const [products, setProducts] = useState<Product[]>(mockProducts)
-  const [orders] = useState<Order[]>(mockOrders)
+    const [products, setProducts] = useState<Product[]>([])
+    const { data: orders = [], isLoading: isOrdersLoading } = useGetSellerOrdersQuery();
   const [showAddProduct, setShowAddProduct] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const itemsPerPage = 5
 
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    category: "Dog Products",
-    price: 0,
-    stock: 0,
-    description: "",
-    imageFile: null as File | null,
-  })
+    const [newProduct, setNewProduct] = useState({
+        name: "",
+        categoryId: 1, // 👈 по умолчанию первая категория
+        price: 0,
+        stock: 0,
+        description: "",
+        imageFile: null as File | null,
+    })
 
   const [imagePreview, setImagePreview] = useState<string>("")
 
@@ -236,13 +91,55 @@ const SellerProfile: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("")
 
   const [showOrderDetails, setShowOrderDetails] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
-  useEffect(() => {
-    if (!user || user.role !== "seller") {
-      navigate("/login")
-    }
-  }, [user, navigate])
+    const [categories, setCategories] = useState<{ id: number; categorieName: string }[]>([])
+
+    const { data: sellerData, isLoading, error, refetch } = useGetSellerProductsQuery()
+    const [createProduct, { isLoading: isCreating }] = useCreateProductMutation()
+
+
+    useEffect(() => {
+        if (sellerData && user?.role === "seller") {
+            const mappedProducts = sellerData.map((p: any) => ({
+                id: p.id,
+                name: p.productName,
+                category: p.categoryName,
+                price: p.price,
+                stock: p.stockQuantity,
+                image: p.imageBase64
+                    ? `data:image/png;base64,${p.imageBase64}`
+                    : "/placeholder.svg",
+                description: p.productDescription,
+                sellerId: user.id,
+            }))
+            setProducts(mappedProducts)
+        }
+    }, [sellerData, user])
+
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch("http://localhost:5278/api/Categories")
+                if (!response.ok) throw new Error("Failed to load categories")
+
+                const data = await response.json()
+                setCategories(data)
+            } catch (error) {
+                console.error("Error loading categories:", error)
+            }
+        }
+
+        fetchCategories()
+    }, [])
+
+
+    useEffect(() => {
+        if (!isUserLoading && (!user || user.role !== "seller")) {
+            navigate("/login")
+        }
+    }, [user, isUserLoading, navigate])
 
   useEffect(() => {
     if (location.state?.activeTab) {
@@ -260,13 +157,14 @@ const SellerProfile: React.FC = () => {
     }
 
     // Apply search filter
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(
-        (order) =>
-          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    }
+      if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase()
+          filtered = filtered.filter(
+              (order) =>
+                  order.id.toString().includes(query) ||
+                  `${order.firstName} ${order.lastName}`.toLowerCase().includes(query)
+          )
+      }
 
     return filtered
   }, [orders, orderFilter, searchQuery])
@@ -274,10 +172,10 @@ const SellerProfile: React.FC = () => {
   // Calculate order statistics
   const orderStats = useMemo(() => {
     const total = orders.length
-    const pending = orders.filter((order) => order.status === "Pending").length
-    const shipped = orders.filter((order) => order.status === "Shipped").length
-    const delivered = orders.filter((order) => order.status === "Delivered").length
-    const processing = orders.filter((order) => order.status === "Processing").length
+      const pending = orders.filter((order) => order.status.toLowerCase() === "pending").length
+      const shipped = orders.filter((order) => order.status.toLowerCase() === "shipped").length
+      const delivered = orders.filter((order) => order.status.toLowerCase() === "delivered").length
+      const processing = orders.filter((order) => order.status.toLowerCase() === "processing").length
 
     return { total, pending, shipped, delivered, processing }
   }, [orders])
@@ -299,35 +197,50 @@ const SellerProfile: React.FC = () => {
       }
       reader.readAsDataURL(file)
     }
-  }
-
-  const handleAddProduct = () => {
-    if (newProduct.name && newProduct.price > 0) {
-      const product: Product = {
-        id: Date.now(),
-        ...newProduct,
-        sellerId: user?.id || 1,
-        image: imagePreview || "/placeholder.svg?height=60&width=60",
-      }
-      setProducts([...products, product])
-      setNewProduct({
-        name: "",
-        category: "Dog Products",
-        price: 0,
-        stock: 0,
-        description: "",
-        imageFile: null,
-      })
-      setImagePreview("")
-      setShowAddProduct(false)
     }
-  }
+
+    const handleAddProduct = async () => {
+        if (!newProduct.name || newProduct.price <= 0 || !newProduct.imageFile) {
+            alert("Please fill in all required fields and upload an image.")
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append("productName", newProduct.name)
+            formData.append("categoryId", newProduct.categoryId.toString())
+            formData.append("price", newProduct.price.toString())
+            formData.append("stockQuantity", newProduct.stock.toString())
+            formData.append("productDescription", newProduct.description)
+            formData.append("imageFile", newProduct.imageFile)
+
+            const added = await createProduct(formData).unwrap()
+            console.log("Product added:", added)
+
+            setShowAddProduct(false)
+            setEditingProduct(null)
+            setNewProduct({
+                name: "",
+                categoryId: 1,
+                price: 0,
+                stock: 0,
+                description: "",
+                imageFile: null,
+            })
+            setImagePreview("")
+            await refetch()
+        } catch (err) {
+            console.error("Add product error:", err)
+            alert("Error adding product.")
+        }
+    }
+
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product)
     setNewProduct({
       name: product.name,
-      category: product.category,
+        categoryId: categories.find((cat) => cat.categorieName === product.category)?.id || 1,
       price: product.price,
       stock: product.stock,
       description: product.description,
@@ -337,38 +250,60 @@ const SellerProfile: React.FC = () => {
     setShowAddProduct(true)
   }
 
-  const handleUpdateProduct = () => {
-    if (editingProduct && newProduct.name && newProduct.price > 0) {
-      setProducts(
-        products.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...editingProduct,
-                ...newProduct,
-                image: imagePreview || editingProduct.image,
-              }
-            : p,
-        ),
-      )
-      setEditingProduct(null)
-      setNewProduct({
-        name: "",
-        category: "Dog Products",
-        price: 0,
-        stock: 0,
-        description: "",
-        imageFile: null,
-      })
-      setImagePreview("")
-      setShowAddProduct(false)
-    }
-  }
+    const [updateProduct] = useUpdateProductMutation()
 
-  const handleDeleteProduct = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((p) => p.id !== id))
+    const handleUpdateProduct = async () => {
+        if (!editingProduct || !newProduct.name || newProduct.price <= 0) {
+            alert("Please fill in all required fields.")
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append("productName", newProduct.name)
+            formData.append("categoryId", newProduct.categoryId.toString())
+            formData.append("price", newProduct.price.toString())
+            formData.append("stockQuantity", newProduct.stock.toString())
+            formData.append("productDescription", newProduct.description)
+            if (newProduct.imageFile) {
+                formData.append("imageFile", newProduct.imageFile)
+            }
+
+            await updateProduct({ id: editingProduct.id, formData }).unwrap()
+
+            setEditingProduct(null)
+            setNewProduct({
+                name: "",
+                categoryId: 1,
+                price: 0,
+                stock: 0,
+                description: "",
+                imageFile: null,
+            })
+            setImagePreview("")
+            setShowAddProduct(false)
+            await refetch()
+        } catch (err) {
+            console.error("Update product error:", err)
+            alert("Error updating product.")
+        }
     }
-  }
+
+
+    const [deleteProduct] = useDeleteProductMutation()
+
+    const handleDeleteProduct = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this product?")) return
+
+        try {
+            await deleteProduct(id).unwrap()
+            await refetch()
+        } catch (err) {
+            console.error("Delete product error:", err)
+            alert("Error deleting product.")
+        }
+    }
+
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -399,7 +334,7 @@ const SellerProfile: React.FC = () => {
   // Analytics data
   const totalProducts = products.length
   const totalOrders = orders.length
-  const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0)
+    const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0)
   const lowStockProducts = products.filter((p) => p.stock < 10).length
 
   if (!user || user.role !== "seller") {
@@ -620,10 +555,10 @@ const SellerProfile: React.FC = () => {
                       filteredOrders.map((order) => (
                         <div key={order.id} className="table-row">
                           <div className="table-col order-id">{order.id}</div>
-                          <div className="table-col">{order.customerName}</div>
-                          <div className="table-col">{order.orderDate}</div>
-                          <div className="table-col">{order.quantity} items</div>
-                          <div className="table-col">€{order.totalAmount.toFixed(2)}</div>
+                              <div className="table-col">{order.firstName} {order.lastName}</div>
+                              <div className="table-col">{new Date(order.createdDate).toLocaleDateString()}</div>
+                              <div className="table-col">{order.orderItems.length} items</div>
+                              <div className="table-col">€{order.totalPrice.toFixed(2)}</div>
                           <div className="table-col">
                             <span className={`status-badge status-${order.status.toLowerCase()}`}>{order.status}</span>
                           </div>
@@ -695,7 +630,7 @@ const SellerProfile: React.FC = () => {
                     </div>
                     <div className="form-group full-width">
                       <label>Apartment Number</label>
-                      <input type="text" value="Suite 101" readOnly />
+                                          <input type="text" value={user?.apartmentNumber || ""} readOnly />
                     </div>
                     <div className="form-group">
                       <label>City</label>
@@ -703,15 +638,15 @@ const SellerProfile: React.FC = () => {
                     </div>
                     <div className="form-group">
                       <label>Postal Code</label>
-                      <input type="text" value="PC 12345" readOnly />
+                                          <input type="text" value={user?.postalCode || ""} readOnly />
                     </div>
                     <div className="form-group full-width">
                       <label>Country</label>
-                      <input type="text" value="United States" readOnly />
+                                          <input type="text" value={user?.country || ""} readOnly />
                     </div>
                     <div className="form-group full-width">
                       <label>Phone Number</label>
-                      <input type="text" value="(555) 987-6543" readOnly />
+                                          <input type="text" value={user?.phoneNumber || ""} readOnly />
                     </div>
                   </div>
                 </div>
@@ -741,7 +676,7 @@ const SellerProfile: React.FC = () => {
                   setEditingProduct(null)
                   setNewProduct({
                     name: "",
-                    category: "Dog Products",
+                      categoryId: 1,
                     price: 0,
                     stock: 0,
                     description: "",
@@ -764,20 +699,27 @@ const SellerProfile: React.FC = () => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Category *</label>
-                <select
-                  value={newProduct.category}
-                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                          <div className="form-group">
+                              <label htmlFor="category">Category</label>
+                              <select
+                                  id="category"
+                                  name="categoryId"
+                                  value={newProduct.categoryId}
+                                  onChange={(e) =>
+                                      setNewProduct((prev) => ({
+                                          ...prev,
+                                          categoryId: Number(e.target.value),
+                                      }))
+                                  }
+                                  className="form-input"
+                              >
+                                  {categories.map((cat) => (
+                                      <option key={cat.id} value={cat.id}>
+                                          {cat.categorieName}
+                                      </option>
+                                  ))}
+                              </select>
+                          </div>
 
               <div className="form-row">
                 <div className="form-group">
@@ -841,7 +783,7 @@ const SellerProfile: React.FC = () => {
                   setEditingProduct(null)
                   setNewProduct({
                     name: "",
-                    category: "Dog Products",
+                      categoryId: 1,
                     price: 0,
                     stock: 0,
                     description: "",

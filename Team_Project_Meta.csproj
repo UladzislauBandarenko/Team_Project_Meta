@@ -31,6 +31,9 @@
 
 	<ItemGroup>
 	  <Folder Include="Front\src\redux\order\" />
+	  <Folder Include="Front\src\redux\products\" />
+	  <Folder Include="Front\src\redux\seller\" />
+	  <Folder Include="Front\src\redux\admin\" />
 	  <Folder Include="Front\src\Sync\" />
 	</ItemGroup>
 

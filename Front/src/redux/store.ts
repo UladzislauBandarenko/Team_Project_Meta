@@ -7,6 +7,9 @@ import { authApi } from "./auth/api"
 import { orderApi } from "./order/orderApi"
 import { favoritesApi } from "./wishlist/favoritesApi"
 import { cartApi } from "./cart/api"
+import { productsApi } from "./products/productsApi"
+import { sellerApi } from "./seller/sellerApi"
+import { adminApi } from "./admin/adminApi"
 
 import authReducer from "./auth/authSlice"
 import cartReducer from "./cart/cartSlice"
@@ -21,13 +24,19 @@ export const store = configureStore({
         [orderApi.reducerPath]: orderApi.reducer,
         [favoritesApi.reducerPath]: favoritesApi.reducer,
         [cartApi.reducerPath]: cartApi.reducer,
+        [productsApi.reducerPath]: productsApi.reducer,
+        [sellerApi.reducerPath]: sellerApi.reducer,
+        [adminApi.reducerPath]: adminApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({ serializableCheck: false }).concat(
             authApi.middleware,
             orderApi.middleware,
             favoritesApi.middleware,
-            cartApi.middleware
+            cartApi.middleware,
+            productsApi.middleware,
+            sellerApi.middleware,
+            adminApi.middleware,
         ),
 })
 
