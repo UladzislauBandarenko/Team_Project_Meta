@@ -4,6 +4,7 @@ import { useSelector } from "react-redux"
 import type { RootState } from "../redux/store"
 import HomePage from "../Pages/HomePage/HomePage"
 import ShopPage from "../Pages/ShopPage/ShopPage"
+import ProductDetailPage from "../Pages/ProductDetailPage/ProductDetailPage"
 import CartPage from "../Pages/CartPage/CartPage"
 import CheckoutPage from "../Pages/CheckoutPage/CheckoutPage"
 import WishlistPage from "../Pages/WishlistPage/WishlistPage"
@@ -53,11 +54,15 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/shop" element={<ShopPage />} />
-      <Route path="/shop/:category" element={<ShopPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/help-shelters" element={<HelpSheltersPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/seller-signup" element={<SellerSignupPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -88,16 +93,16 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/profile"
+        path="/help-shelters"
         element={
           <ProtectedFromSellers>
-            <ProfilePage />
+            <HelpSheltersPage />
           </ProtectedFromSellers>
         }
       />
 
       {/* Admin routes */}
-      <Route path="/admin" element={<AdminProfile />} />
+      <Route path="/admin/*" element={<AdminProfile />} />
 
       {/* Seller-only routes */}
       <Route
@@ -109,7 +114,7 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/seller/order/:orderId"
+        path="/seller/order/:id"
         element={
           <SellerOnlyRoute>
             <OrderDetailsPage />
@@ -119,7 +124,7 @@ export const AppRoutes: React.FC = () => {
 
       {/* Static pages */}
       <Route path="/mission" element={<div>Mission Page</div>} />
-      <Route path="/shelters" element={<div>Partner Shelters Page</div>} />
+      <Route path="/partner-shelters" element={<div>Partner Shelters Page</div>} />
       <Route path="/contact" element={<div>Contact Page</div>} />
       <Route path="/faq" element={<div>FAQ Page</div>} />
       <Route path="/shipping" element={<div>Shipping Policy Page</div>} />

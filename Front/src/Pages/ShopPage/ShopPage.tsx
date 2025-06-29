@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useMemo, useEffect } from "react"
+import type React from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Link, useParams, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { addToCart } from "../../redux/cart/cartSlice"
@@ -46,11 +47,11 @@ const ShopPage: React.FC = () => {
             id: p.id,
             name: p.productName,
             price: p.price,
-            rating: p.averageRating,
-            reviews: p.reviewCount,
+            rating: p.averageRating || 4.5,
+            reviews: p.reviewCount || 0,
             image: p.imageData ? `data:image/jpeg;base64,${p.imageData}` : undefined,
             category: p.categoryName ?? "",
-          }))
+          })),
         )
       } catch (err) {
         console.error("Failed to fetch products", err)
@@ -63,20 +64,14 @@ const ShopPage: React.FC = () => {
     let filtered = [...products]
 
     if (searchQuery) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery)
-      )
+      filtered = filtered.filter((p) => p.name.toLowerCase().includes(searchQuery))
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((p) =>
-        selectedCategories.includes(p.category)
-      )
+      filtered = filtered.filter((p) => selectedCategories.includes(p.category))
     }
 
-    filtered = filtered.filter(
-      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
-    )
+    filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
 
     switch (sortBy) {
       case "price-low":
@@ -98,21 +93,20 @@ const ShopPage: React.FC = () => {
 
   const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedProducts = filteredAndSortedProducts.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  )
+  const paginatedProducts = filteredAndSortedProducts.slice(startIndex, startIndex + itemsPerPage)
 
   const handleCategoryChange = (cat: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-    )
+    setSelectedCategories((prev) => (prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]))
     setCurrentPage(1)
   }
 
   const handlePriceRangeChange = (value: number, index: number) => {
     const newRange: [number, number] = [...priceRange]
-    newRange[index] = value
+    if (index === 0 && value <= priceRange[1]) {
+      newRange[0] = value
+    } else if (index === 1 && value >= priceRange[0]) {
+      newRange[1] = value
+    }
     setPriceRange(newRange)
     setCurrentPage(1)
   }
@@ -125,7 +119,7 @@ const ShopPage: React.FC = () => {
         price: product.price,
         image: product.image,
         category: product.category,
-      })
+      }),
     )
   }
 
@@ -139,7 +133,7 @@ const ShopPage: React.FC = () => {
         rating: product.rating,
         reviews: product.reviews,
         category: product.category,
-      })
+      }),
     )
   }
 
@@ -148,14 +142,39 @@ const ShopPage: React.FC = () => {
   }
 
   const getCategoryCounts = (): Record<string, number> => {
-    return products.reduce((acc, p) => {
-      acc[p.category] = (acc[p.category] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    return products.reduce(
+      (acc, p) => {
+        acc[p.category] = (acc[p.category] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
   }
 
   const categoryCounts = getCategoryCounts()
   const uniqueCategories = Object.keys(categoryCounts)
+
+  const renderStars = (rating: number) => {
+    const stars = []
+    const fullStars = Math.floor(rating)
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(
+          <span key={i} className="star filled">
+            ★
+          </span>,
+        )
+      } else {
+        stars.push(
+          <span key={i} className="star empty">
+            ★
+          </span>,
+        )
+      }
+    }
+    return stars
+  }
 
   return (
     <div className="shop-page">
@@ -193,38 +212,40 @@ const ShopPage: React.FC = () => {
 
               <div className="filter-group">
                 <h4 className="filter-group__title">Price Range</h4>
-                <div className="price-range__inputs">
-                  <input
-                    type="number"
-                    value={priceRange[0]}
-                    onChange={(e) => handlePriceRangeChange(+e.target.value, 0)}
-                    min={0}
-                    max={priceRange[1]}
-                  />
-                  to
-                  <input
-                    type="number"
-                    value={priceRange[1]}
-                    onChange={(e) => handlePriceRangeChange(+e.target.value, 1)}
-                    min={priceRange[0]}
-                    max={200}
-                  />
-                </div>
-                <div className="price-range__slider">
-                  <input
-                    type="range"
-                    min="0"
-                    max="200"
-                    value={priceRange[0]}
-                    onChange={(e) => handlePriceRangeChange(+e.target.value, 0)}
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max="200"
-                    value={priceRange[1]}
-                    onChange={(e) => handlePriceRangeChange(+e.target.value, 1)}
-                  />
+                <div className="price-range">
+                  <div className="price-range__inputs">
+                    <div className="price-input">
+                      <span className="price-input__symbol">€</span>
+                      <input
+                        type="number"
+                        value={priceRange[0]}
+                        onChange={(e) => handlePriceRangeChange(+e.target.value, 0)}
+                        min={0}
+                        max={priceRange[1]}
+                      />
+                    </div>
+                    <span className="price-range__separator">to</span>
+                    <div className="price-input">
+                      <span className="price-input__symbol">€</span>
+                      <input
+                        type="number"
+                        value={priceRange[1]}
+                        onChange={(e) => handlePriceRangeChange(+e.target.value, 1)}
+                        min={priceRange[0]}
+                        max={200}
+                      />
+                    </div>
+                  </div>
+                  <div className="price-range__slider">
+                    <input
+                      type="range"
+                      min="0"
+                      max="200"
+                      value={priceRange[1]}
+                      onChange={(e) => handlePriceRangeChange(+e.target.value, 1)}
+                      className="range-slider"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -233,18 +254,12 @@ const ShopPage: React.FC = () => {
           <main className="shop-page__main">
             <div className="shop-header">
               <div className="shop-header__info">
-                <span className="shop-header__count">
-                  Showing {filteredAndSortedProducts.length} products
-                </span>
+                <span className="shop-header__count">Showing {filteredAndSortedProducts.length} products</span>
               </div>
               <div className="shop-header__controls">
                 <div className="sort-control">
                   <label htmlFor="sort-by">Sort by:</label>
-                  <select
-                    id="sort-by"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
+                  <select id="sort-by" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                     <option value="featured">Featured</option>
                     <option value="price-low">Price: Low to High</option>
                     <option value="price-high">Price: High to Low</option>
@@ -259,11 +274,14 @@ const ShopPage: React.FC = () => {
               {paginatedProducts.length > 0 ? (
                 paginatedProducts.map((product) => (
                   <div key={product.id} className="product-card">
-                    <div className="product-card__image">
-                      <img
-                        src={product.image || placeholderImage}
-                        alt={product.name}
-                      />
+                    <div className="product-card__image-container">
+                      <Link to={`/product/${product.id}`} className="product-card__image-link">
+                        <img
+                          src={product.image || placeholderImage}
+                          alt={product.name}
+                          className="product-card__image"
+                        />
+                      </Link>
                       <button
                         className={`product-card__wishlist ${isInWishlist(product.id) ? "active" : ""}`}
                         onClick={() => handleToggleWishlist(product)}
@@ -271,30 +289,34 @@ const ShopPage: React.FC = () => {
                         {isInWishlist(product.id) ? "❤️" : "🤍"}
                       </button>
                     </div>
+
                     <div className="product-card__content">
-                      <h3 className="product-card__name">{product.name}</h3>
+                      <Link to={`/product/${product.id}`} className="product-card__title-link">
+                        <h3 className="product-card__name">{product.name}</h3>
+                      </Link>
+
                       <div className="product-card__rating">
-                        <div className="product-card__stars">★★★★★</div>
-                        <span className="product-card__reviews">
-                          ({product.reviews})
-                        </span>
+                        <div className="product-card__stars">{renderStars(product.rating)}</div>
+                        <span className="product-card__reviews">({product.reviews})</span>
                       </div>
+
                       <div className="product-card__price">
-                        <span className="product-card__current-price">
-                          €{product.price}
-                        </span>
+                        <span className="product-card__current-price">€{product.price.toFixed(2)}</span>
+                        {product.originalPrice && (
+                          <span className="product-card__original-price">€{product.originalPrice.toFixed(2)}</span>
+                        )}
                       </div>
-                      <button
-                        className="product-card__add-to-cart"
-                        onClick={() => handleAddToCart(product)}
-                      >
+
+                      <button className="product-card__add-to-cart" onClick={() => handleAddToCart(product)}>
                         🛒 Add to Cart
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
-                <p>No products found{searchQuery && ` for "${searchQuery}"`}.</p>
+                <div className="no-products">
+                  <p>No products found{searchQuery && ` for "${searchQuery}"`}.</p>
+                </div>
               )}
             </div>
           </main>
