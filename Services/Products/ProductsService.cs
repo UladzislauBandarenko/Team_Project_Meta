@@ -179,5 +179,20 @@ namespace Team_Project_Meta.Services.Products
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> DeleteProductAsync(int id, int userId, string role)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+                return false;
+
+            if (role == "seller" && product.SellerId != userId)
+                return false;
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }
