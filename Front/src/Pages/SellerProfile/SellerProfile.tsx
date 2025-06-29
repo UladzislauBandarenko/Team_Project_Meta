@@ -10,6 +10,7 @@ import "./SellerProfile.scss"
 import AnalyticsPage from "./AnalyticsPage"
 import { useGetSellerProductsQuery, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation } from "../../redux/products/productsApi"
 import { useGetSellerOrdersQuery } from "../../redux/order/orderApi"
+import { useGetCurrentUserQuery } from "../../redux/auth/api"
 
 interface Product {
     id: number
@@ -63,7 +64,7 @@ const categories = [
 const SellerProfile: React.FC = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const user = useSelector((state: RootState) => state.auth.user)
+    const { data: user, isLoading: isUserLoading } = useGetCurrentUserQuery()
   const location = useLocation()
 
   const [activeTab, setActiveTab] = useState("products")
@@ -134,11 +135,11 @@ const SellerProfile: React.FC = () => {
     }, [])
 
 
-  useEffect(() => {
-    if (!user || user.role !== "seller") {
-      navigate("/login")
-    }
-  }, [user, navigate])
+    useEffect(() => {
+        if (!isUserLoading && (!user || user.role !== "seller")) {
+            navigate("/login")
+        }
+    }, [user, isUserLoading, navigate])
 
   useEffect(() => {
     if (location.state?.activeTab) {
@@ -629,7 +630,7 @@ const SellerProfile: React.FC = () => {
                     </div>
                     <div className="form-group full-width">
                       <label>Apartment Number</label>
-                      <input type="text" value="Suite 101" readOnly />
+                                          <input type="text" value={user?.apartmentNumber || ""} readOnly />
                     </div>
                     <div className="form-group">
                       <label>City</label>
@@ -637,15 +638,15 @@ const SellerProfile: React.FC = () => {
                     </div>
                     <div className="form-group">
                       <label>Postal Code</label>
-                      <input type="text" value="PC 12345" readOnly />
+                                          <input type="text" value={user?.postalCode || ""} readOnly />
                     </div>
                     <div className="form-group full-width">
                       <label>Country</label>
-                      <input type="text" value="United States" readOnly />
+                                          <input type="text" value={user?.country || ""} readOnly />
                     </div>
                     <div className="form-group full-width">
                       <label>Phone Number</label>
-                      <input type="text" value="(555) 987-6543" readOnly />
+                                          <input type="text" value={user?.phoneNumber || ""} readOnly />
                     </div>
                   </div>
                 </div>
