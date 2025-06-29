@@ -122,6 +122,21 @@ namespace Team_Project_Meta.Controllers
             return Ok(products);
         }
 
+        [Authorize(Roles = "admin,seller")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            int userId = GetUserIdFromToken();
+            var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+            var result = await _productsService.DeleteProductAsync(id, userId, role);
+            if (!result)
+                return Forbid(); // Либо return NotFound() если хочешь различать
+
+            return NoContent();
+        }
+
+
     }
 
 }
