@@ -31,7 +31,25 @@ export const orderApi = createApi({
                 method: "GET",
             }),
         }),
+        getAllOrders: builder.query<OrderDto[], void>({
+            query: () => ({
+                url: "",
+                method: "GET",
+            }),
+        }),
+        getOrderById: builder.query<OrderDto, number>({
+            query: (id) => ({
+                url: `/${id}`,
+                method: "GET",
+            }),
+        }),
     }),
 })
 
-export const { useCreateOrderMutation, useGetMyOrdersQuery, useGetSellerOrdersQuery, } = orderApi
+export const {
+    useCreateOrderMutation,
+    useGetMyOrdersQuery,
+    useGetSellerOrdersQuery,
+    useGetAllOrdersQuery,
+    useGetOrderByIdQuery,
+} = orderApi
