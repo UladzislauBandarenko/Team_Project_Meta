@@ -17,7 +17,8 @@ interface OrderItem {
   quantity: number
   price: number
   name: string
-  image: string
+    image: string
+    imageBase64?: string
 }
 
 interface Order {
@@ -366,7 +367,10 @@ function ProfilePage() {
                           return (
                             <OrderItemWithReview
                               key={item.id}
-                              item={item}
+                                  item={{
+                                      ...item,
+                                      image: item.imageBase64 ?? "" // 👈 добавляем image вручную
+                                  }}
                               existingReview={existingReview}
                               onReviewSubmit={(rating, comment) => handleReviewSubmit(item.productId, rating, comment)}
                             />
