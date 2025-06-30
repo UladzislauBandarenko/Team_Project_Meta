@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { addToCart } from "../../redux/cart/cartSlice"
 import { toggleWishlistItem } from "../../redux/wishlist/wishlistSlice"
 import type { RootState } from "../../redux/store"
+import { useGetBestsellersQuery } from "../../redux/products/productsApi"
 import "./HomePage.scss"
 
 import cover from "../../assets/IMG-44.jpg"
@@ -25,89 +26,6 @@ const categories = [
   { id: 4, name: "Bird Products", image: bird, link: "/shop/bird" },
   { id: 5, name: "Small Pet Products", image: small, link: "/shop/small-pets" },
   { id: 6, name: "Reptile Products", image: reptile, link: "/shop/reptile" },
-]
-
-const bestsellerProducts = [
-  {
-    id: 1,
-    name: "Premium Dog Food - 1kg",
-    price: 39.99,
-    originalPrice: null,
-    rating: 4.8,
-    reviews: 128,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "dogs",
-  },
-  {
-    id: 2,
-    name: "Interactive Cat Toy",
-    price: 24.99,
-    originalPrice: null,
-    rating: 4.6,
-    reviews: 94,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "cats",
-  },
-  {
-    id: 3,
-    name: "Orthopedic Dog Bed - size L",
-    price: 59.99,
-    originalPrice: null,
-    rating: 4.9,
-    reviews: 76,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "dogs",
-  },
-  {
-    id: 4,
-    name: "Automatic Pet Feeder",
-    price: 79.99,
-    originalPrice: null,
-    rating: 4.5,
-    reviews: 112,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "dogs",
-  },
-  {
-    id: 5,
-    name: "Cat Scratching Post",
-    price: 34.99,
-    originalPrice: null,
-    rating: 4.7,
-    reviews: 89,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "cats",
-  },
-  {
-    id: 6,
-    name: "Dog Leash & Collar Set - size S",
-    price: 29.99,
-    originalPrice: null,
-    rating: 4.4,
-    reviews: 104,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "dogs",
-  },
-  {
-    id: 7,
-    name: "Aquarium Starter Kit - 10L",
-    price: 89.99,
-    originalPrice: null,
-    rating: 4.3,
-    reviews: 67,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "fish",
-  },
-  {
-    id: 8,
-    name: "Bird Cage with Accessories",
-    price: 119.99,
-    originalPrice: null,
-    rating: 4.6,
-    reviews: 52,
-    image: "/placeholder.svg?height=180&width=250",
-    category: "birds",
-  },
 ]
 
 export const HomePage: React.FC = () => {
@@ -163,6 +81,8 @@ export const HomePage: React.FC = () => {
     for (let i = stars.length; i < 5; i++) stars.push(<span key={`e${i}`}>☆</span>)
     return stars
   }
+
+    const { data: bestsellerProducts = [], isLoading } = useGetBestsellersQuery()
 
   return (
     <div className="homepage">
@@ -225,7 +145,10 @@ export const HomePage: React.FC = () => {
             {bestsellerProducts.slice(0, 8).map((product) => (
               <div key={product.id} className="product-card">
                 <div className="product-card__image">
-                  <img src={product.image} alt={product.name} />
+                        <img
+                            src={product.imageBase64 ? `data:image/jpeg;base64,${product.imageBase64}` : "/placeholder.svg?height=180&width=250"}
+                            alt={product.productName}
+                        />
                   <button
                     className={`product-card__wishlist ${isInWishlist(product.id) ? "active" : ""}`}
                     onClick={() => handleToggleWishlist(product)}
@@ -234,10 +157,10 @@ export const HomePage: React.FC = () => {
                   </button>
                 </div>
                 <div className="product-card__content">
-                  <h3 className="product-card__name">{product.name}</h3>
+                        <h3 className="product-card__name">{product.productName}</h3>
                   <div className="product-card__rating">
-                    <div className="product-card__stars">{renderStars(product.rating)}</div>
-                    <span className="product-card__reviews">({product.reviews})</span>
+                            <div className="product-card__stars">{renderStars(product.averageRating)}</div>
+                            <span className="product-card__reviews">({product.reviewCount})</span>
                   </div>
                   <div className="product-card__price">
                     <span className="product-card__current-price">€{product.price}</span>

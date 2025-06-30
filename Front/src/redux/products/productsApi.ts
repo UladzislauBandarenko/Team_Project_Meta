@@ -73,6 +73,10 @@ export const productsApi = createApi({
         getAllProducts: builder.query<any[], void>({
             query: () => "Products",
         }),
+
+        getBestsellers: builder.query<Product[], void>({
+            query: () => "Products/bestsellers",
+        }),
     }),
 })
 
@@ -84,4 +88,5 @@ export const {
     useUpdateProductMutation,
     useDeleteProductMutation,
     useGetAllProductsQuery,
+    useGetBestsellersQuery,
 } = productsApi
