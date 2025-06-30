@@ -1,6 +1,6 @@
 ﻿import { useEffect } from "react"
 import { useSelector } from "react-redux"
-import { RootState } from "../redux/store"
+import { RootState, store } from "../redux/store"
 import {
     useAddCartItemMutation,
     useUpdateCartItemMutation,
@@ -13,7 +13,12 @@ export const CartSync = () => {
     const [addCartItem] = useAddCartItemMutation()
     const [updateCartItem] = useUpdateCartItemMutation()
     const [deleteCartItem] = useDeleteCartItemMutation()
-    const { data: backendCart, isSuccess } = useGetCartQuery()
+    const { data: backendCart, isSuccess } = useGetCartQuery(undefined, {
+        pollingInterval: 0,
+        refetchOnMountOrArgChange: false,
+        refetchOnReconnect: false,
+        refetchOnFocus: false,
+    })
 
     useEffect(() => {
         const syncCart = async () => {
@@ -25,13 +30,15 @@ export const CartSync = () => {
                 return
             }
 
-            console.log("✅ [CartSync] Syncing with backend")
-            console.log("🧺 Local cart:", cartItems)
-            console.log("📦 Backend cart:", backendCart)
+            const currentCart = store.getState().cart.items
+            const backend = store.getState().cartApi.queries["getCart(undefined)"]?.data as typeof backendCart
 
-            // === ОБНОВЛЕНИЕ / ДОБАВЛЕНИЕ ===
-            for (const localItem of cartItems) {
-                const existing = backendCart.find((b) => b.productId === localItem.id)
+            console.log("✅ [CartSync] Syncing with backend")
+            console.log("🧺 Local cart:", currentCart)
+            console.log("📦 Backend cart:", backend)
+
+            for (const localItem of currentCart) {
+                const existing = backend?.find((b) => b.productId === localItem.id)
 
                 if (existing) {
                     if (existing.quantity !== localItem.quantity) {
@@ -63,9 +70,8 @@ export const CartSync = () => {
                 }
             }
 
-            // === УДАЛЕНИЕ ===
-            for (const backendItem of backendCart) {
-                const stillExists = cartItems.some(
+            for (const backendItem of backend || []) {
+                const stillExists = currentCart.some(
                     (local) => local.backendId === backendItem.id
                 )
 
@@ -84,7 +90,7 @@ export const CartSync = () => {
         syncCart()
 
         return () => clearInterval(interval)
-    }, [cartItems, backendCart, isSuccess, addCartItem, updateCartItem, deleteCartItem])
+    }, [])
 
     return null
 }
