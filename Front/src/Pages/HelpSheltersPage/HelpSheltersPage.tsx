@@ -8,6 +8,9 @@ import shop from "../../assets/IMG-87.jpg"
 import make from "../../assets/IMG-100.jpg"
 import shelt from "../../assets/IMG-113.jpg"
 import track from "../../assets/IMG-126.jpg"
+import successStory1 from "../../assets/success-story1.jpg"
+import successStory2 from "../../assets/success-story2.jpg"
+import successStory3 from "../../assets/success-story3.jpg"
 
 const successStories = [
   {
@@ -15,21 +18,21 @@ const successStories = [
     title: "Max's Journey",
     description:
       "Max was found abandoned and malnourished. After 3 months of care and rehabilitation, he found his forever home with a loving family.",
-    image: "/placeholder.svg?height=200&width=300",
+    image: successStory1,
   },
   {
     id: 2,
     title: "Luna's Recovery",
     description:
       "Luna needed emergency surgery after being hit by a car. Thanks to the emergency fund, she made a full recovery and is now thriving.",
-    image: "/placeholder.svg?height=200&width=300",
+    image: successStory2,
   },
   {
     id: 3,
     title: "The Paw Squad",
     description:
       "A litter of 8 puppies was rescued from an abandoned property. After foster care, all found loving homes through our network.",
-    image: "/placeholder.svg?height=200&width=300",
+    image: successStory3,
   },
 ]
 
@@ -124,18 +127,20 @@ export const HelpSheltersPage: React.FC = () => {
               <div className="step-card" key={idx}>
                 <div className="step-card__number">{idx + 1}</div>
                 <div className="step-card__image">
-                  <img src={img} alt={`Step ${idx + 1}`} />
+                  <img src={img || "/placeholder.svg"} alt={`Step ${idx + 1}`} />
                 </div>
                 <h3 className="step-card__title">
                   {["Shop Products", "Make a Purchase", "Support Shelters", "Track Impact"][idx]}
                 </h3>
                 <p className="step-card__description">
-                  {[
-                    "Browse our curated collection of high-quality pet supplies and accessories for your beloved pets.",
-                    "Complete your purchase knowing that a portion of every transaction goes directly to helping shelter animals.",
-                    "Your purchase helps provide essential supplies and care for animals in partner shelters.",
-                    "A portion of every purchase goes directly to supporting animals in need through our network.",
-                  ][idx]}
+                  {
+                    [
+                      "Browse our curated collection of high-quality pet supplies and accessories for your beloved pets.",
+                      "Complete your purchase knowing that a portion of every transaction goes directly to helping shelter animals.",
+                      "Your purchase helps provide essential supplies and care for animals in partner shelters.",
+                      "A portion of every purchase goes directly to supporting animals in need through our network.",
+                    ][idx]
+                  }
                 </p>
               </div>
             ))}
