@@ -224,7 +224,7 @@ export const CheckoutPage: React.FC = () => {
                 country: shippingData.country,
                 phoneNumber: shippingData.phoneNumber,
                 totalPrice: total,
-                status: "Pending",
+                status: "pending",
                 deliveryServiceId: selectedShipping === "smartpost" ? 1 : selectedShipping === "dpd" ? 2 : 3,
                 orderItems: items.map((item) => ({
                     productId: item.id,
