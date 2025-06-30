@@ -72,10 +72,9 @@ export const authSlice = createSlice({
             localStorage.removeItem("userData")
         },
         updateUser: (state, { payload }: PayloadAction<Partial<User>>) => {
-            if (state.user) {
-                state.user = { ...state.user, ...payload }
-                localStorage.setItem("userData", JSON.stringify(state.user))
-            }
+            const updatedUser = { ...state.user, ...payload }
+            state.user = updatedUser
+            localStorage.setItem("userData", JSON.stringify(updatedUser))
         },
     },
 })

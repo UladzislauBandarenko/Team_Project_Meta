@@ -112,19 +112,22 @@ export const CheckoutPage: React.FC = () => {
     const { data: currentUser, isLoading: isUserLoading } = useGetCurrentUserQuery()
 
     useEffect(() => {
-        if (currentUser?.shippingAddress) {
-            const addr = currentUser.shippingAddress
+        if (currentUser) {
             setShippingData((prev) => ({
                 ...prev,
-                streetAddress: addr.streetAddress || "",
-                apartment: addr.apartment || "",
-                city: addr.city || "",
-                zipCode: addr.zipCode || "",
-                country: addr.country || "Lithuania",
-                phoneNumber: addr.phoneNumber || "",
+                firstName: currentUser.firstName || "",
+                lastName: currentUser.lastName || "",
+                streetAddress: currentUser.address || "",
+                apartment: currentUser.apartmentNumber || "",
+                city: currentUser.city || "",
+                zipCode: currentUser.postalCode || "",
+                country: currentUser.country || "Lithuania",
+                phoneNumber: currentUser.phoneNumber || "",
             }))
         }
     }, [currentUser])
+
+
 
   useEffect(() => {
     if (!isAuthenticated) {
