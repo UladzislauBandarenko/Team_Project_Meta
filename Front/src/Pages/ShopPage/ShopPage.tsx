@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { addToCart } from "../../redux/cart/cartSlice"
 import { toggleWishlistItem } from "../../redux/wishlist/wishlistSlice"
 import type { RootState } from "../../redux/store"
+import placeholderImage from "../../assets/IMG-44.jpg"
 import "./ShopPage.scss"
 
 interface Product {
@@ -16,7 +17,7 @@ interface Product {
     originalPrice?: number
     rating: number
     reviews: number
-    image?: string
+    imageBase64?: string
     category: string
 }
 
@@ -41,7 +42,6 @@ const ShopPage: React.FC = () => {
             try {
                 const res = await fetch("http://localhost:5278/api/Products")
                 const data = await res.json()
-                console.log("Products from API:", data)
                 setProducts(
                     data.map((p: any) => ({
                         id: p.id,
@@ -49,7 +49,7 @@ const ShopPage: React.FC = () => {
                         price: p.price,
                         rating: p.averageRating || 4.5,
                         reviews: p.reviewCount || 0,
-                        image: p.imageData ? `data:image/jpeg;base64,${p.imageData}` : undefined,
+                        imageBase64: p.imageData,
                         category: p.categoryName ?? "",
                     }))
                 )
@@ -114,11 +114,25 @@ const ShopPage: React.FC = () => {
     }
 
     const handleAddToCart = (product: Product) => {
-        dispatch(addToCart(product))
+        dispatch(addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.imageBase64 ? `data:image/jpeg;base64,${product.imageBase64}` : undefined,
+            category: product.category,
+        }))
     }
 
     const handleToggleWishlist = (product: Product) => {
-        dispatch(toggleWishlistItem(product))
+        dispatch(toggleWishlistItem({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.imageBase64 ? `data:image/jpeg;base64,${product.imageBase64}` : undefined,
+            rating: product.rating,
+            reviews: product.reviews,
+            category: product.category,
+        }))
     }
 
     const isInWishlist = (productId: number) => {
@@ -154,7 +168,6 @@ const ShopPage: React.FC = () => {
                     <aside className="shop-page__sidebar">
                         <div className="filters">
                             <h3 className="filters__title">Filters</h3>
-
                             <div className="filter-group">
                                 <h4 className="filter-group__title">Pet Type</h4>
                                 <div className="filter-group__options">
@@ -215,7 +228,7 @@ const ShopPage: React.FC = () => {
                                         <div className="product-card__image-container">
                                             <Link to={`/product/${product.id}`}>
                                                 <img
-                                                    src={product.image}
+                                                    src={product.imageBase64 ? `data:image/jpeg;base64,${product.imageBase64}` : placeholderImage}
                                                     alt={product.name}
                                                     className="product-card__image"
                                                 />

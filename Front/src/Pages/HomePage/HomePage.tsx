@@ -184,9 +184,9 @@ export const HomePage: React.FC = () => {
               />
               <button type="submit" className="hero__search-button">🔍</button>
             </form>
-            <Link to="/shop" className="hero__cta-button">
-              Find Products
-            </Link>
+                      <button className="hero__cta-button" onClick={handleSearch}>
+                          Find Products
+                      </button>
           </div>
           <div className="hero__image">
             <img src={cover} alt="Happy pets with products" className="hero__image-main" />
