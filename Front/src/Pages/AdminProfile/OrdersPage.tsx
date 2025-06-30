@@ -137,7 +137,7 @@ const OrdersPage: React.FC = () => {
                                         <div key={item.id} className="item-row">
                                             <div className="col product-col">
                                                 <img
-                                                    src={item.imageBase64 || "/placeholder.svg?height=50&width=50"}
+                                                    src={item.imageBase64 ? `data:image/jpeg;base64,${item.imageBase64}` : "/placeholder.svg?height=50&width=50"}
                                                     alt={item.productName}
                                                 />
                                                 <span>{item.productName}</span>
