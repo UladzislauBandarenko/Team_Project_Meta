@@ -473,7 +473,7 @@ function OrderItemWithReview({ item, existingReview, onReviewSubmit }: OrderItem
   return (
     <div className="order-item-detail">
       <div className="order-item-detail__image">
-        <img src={item.image || "/placeholder.svg"} alt={item.name} />
+              <img src={item.image ? `data:image/jpeg;base64,${item.image}` : "/placeholder.svg"} alt={item.name} />
       </div>
       <div className="order-item-detail__info">
         <h4 className="order-item-detail__name">{item.name}</h4>
