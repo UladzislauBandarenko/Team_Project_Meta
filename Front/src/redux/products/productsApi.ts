@@ -69,6 +69,10 @@ export const productsApi = createApi({
                 method: "DELETE",
             }),
         }),
+
+        getAllProducts: builder.query<any[], void>({
+            query: () => "Products",
+        }),
     }),
 })
 
@@ -79,4 +83,5 @@ export const {
     useCreateProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
+    useGetAllProductsQuery,
 } = productsApi
