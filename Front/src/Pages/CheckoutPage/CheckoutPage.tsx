@@ -8,6 +8,7 @@ import { clearCart } from "../../redux/cart/cartSlice"
 import type { RootState } from "../../redux/store"
 import { useCreateOrderMutation } from "../../redux/order/orderApi"
 import type { CreateOrderDto } from "../../redux/order/types"
+import { useGetCurrentUserQuery } from "../../redux/auth/api"
 import "./CheckoutPage.scss"
 
 interface ShippingData {
@@ -106,7 +107,24 @@ export const CheckoutPage: React.FC = () => {
     WELCOME15: 0.15,
     PETLOVE20: 0.2,
     PET2025: 0.2,
-  }
+    }
+
+    const { data: currentUser, isLoading: isUserLoading } = useGetCurrentUserQuery()
+
+    useEffect(() => {
+        if (currentUser?.shippingAddress) {
+            const addr = currentUser.shippingAddress
+            setShippingData((prev) => ({
+                ...prev,
+                streetAddress: addr.streetAddress || "",
+                apartment: addr.apartment || "",
+                city: addr.city || "",
+                zipCode: addr.zipCode || "",
+                country: addr.country || "Lithuania",
+                phoneNumber: addr.phoneNumber || "",
+            }))
+        }
+    }, [currentUser])
 
   useEffect(() => {
     if (!isAuthenticated) {
