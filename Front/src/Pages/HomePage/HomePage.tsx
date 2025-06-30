@@ -123,7 +123,7 @@ export const HomePage: React.FC = () => {
           </div>
           <div className="categories__grid">
             {categories.map((cat) => (
-              <Link key={cat.id} to={cat.link} className="category-card">
+                <Link key={cat.id} to={`/shop?categoryIndex=${(cat.id - 1) % 6}`} className="category-card">
                 <div className="category-card__image">
                   <img src={cat.image || "/placeholder.svg"} alt={cat.name} />
                 </div>

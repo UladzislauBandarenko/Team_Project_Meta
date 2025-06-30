@@ -28,6 +28,9 @@ const ShopPage: React.FC = () => {
     const searchParams = new URLSearchParams(location.search)
     const searchQuery = searchParams.get("search")?.toLowerCase() || ""
 
+    const categoryIndexParam = searchParams.get("categoryIndex")
+    const categoryIndex = categoryIndexParam ? parseInt(categoryIndexParam) : null
+
     const wishlistItems = useSelector((state: RootState) => state.wishlist.items)
 
     const [products, setProducts] = useState<Product[]>([])
@@ -59,6 +62,14 @@ const ShopPage: React.FC = () => {
         }
         fetchProducts()
     }, [])
+
+    useEffect(() => {
+        if (products.length === 0 || categoryIndex === null) return
+
+        const categories = Object.keys(getCategoryCounts())
+        const matched = categories[categoryIndex % categories.length]
+        if (matched) setSelectedCategories([matched])
+    }, [products, categoryIndex])
 
     const filteredAndSortedProducts = useMemo(() => {
         let filtered = [...products]
