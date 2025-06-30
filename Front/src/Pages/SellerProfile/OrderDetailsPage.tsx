@@ -1,33 +1,29 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { useGetSellerOrdersQuery } from "../../redux/order/orderApi"
+import { useLocation, useNavigate } from "react-router-dom"
 import type { OrderDto } from "@/redux/order/types"
 import "./OrderDetailsPage.scss"
 
 const OrderDetailsPage: React.FC = () => {
-    const { orderId } = useParams<{ orderId: string }>()
+    const location = useLocation()
     const navigate = useNavigate()
-    const { data: orders, isLoading } = useGetSellerOrdersQuery()
-    const [order, setOrder] = useState<OrderDto | null>(null)
+
+    const orderFromState = location.state?.order as OrderDto | undefined
+    const [order, setOrder] = useState<OrderDto | null>(orderFromState || null)
 
     useEffect(() => {
-        if (orders && orderId) {
-            const matchedOrder = orders.find((o) => o.id.toString() === orderId)
-            if (matchedOrder) {
-                setOrder(matchedOrder)
-            } else {
-                navigate("/seller/dashboard")
-            }
+        if (!orderFromState) {
+            // Никаких данных — отправляем обратно
+            navigate("/seller/dashboard", { state: { activeTab: "orders" } })
         }
-    }, [orders, orderId, navigate])
+    }, [orderFromState, navigate])
 
     const handleBackToOrders = () => {
         navigate("/seller/dashboard", { state: { activeTab: "orders" } })
     }
 
-    if (isLoading || !order) {
+    if (!order) {
         return (
             <div className="order-details-loading">
                 <p>Loading order details...</p>
@@ -40,7 +36,6 @@ const OrderDetailsPage: React.FC = () => {
 
     return (
         <div className="order-details-page">
-            {/* Header */}
             <div className="order-details-header">
                 <button className="back-btn" onClick={handleBackToOrders}>
                     ← Back to Orders
@@ -53,7 +48,6 @@ const OrderDetailsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Content */}
             <div className="order-details-content">
                 <div className="order-header-info">
                     <h1>Order #{order.id}</h1>
