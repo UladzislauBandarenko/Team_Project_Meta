@@ -8,7 +8,7 @@ import { clearCart } from "../../redux/cart/cartSlice"
 import type { RootState } from "../../redux/store"
 import { useCreateOrderMutation } from "../../redux/order/orderApi"
 import type { CreateOrderDto } from "../../redux/order/types"
-import { useGetCurrentUserQuery } from "../../redux/auth/api"
+import { useGetCurrentUserQuery, useUpdateUserAddressMutation } from "../../redux/auth/api"
 import "./CheckoutPage.scss"
 
 interface ShippingData {
@@ -191,38 +191,53 @@ export const CheckoutPage: React.FC = () => {
       setCurrentStep(currentStep - 1)
       setErrors({})
     }
-  }
-
-  const handlePlaceOrder = async () => {
-    const orderNum = `ORD-${Date.now()}`
-    setOrderNumber(orderNum)
-
-    try {
-      const payload: CreateOrderDto = {
-        address: shippingData.streetAddress,
-        apartmentNumber: shippingData.apartment,
-        city: shippingData.city,
-        postalCode: shippingData.zipCode,
-        country: shippingData.country,
-        phoneNumber: shippingData.phoneNumber,
-        totalPrice: total,
-        status: "Pending",
-        deliveryServiceId: selectedShipping === "smartpost" ? 1 : selectedShipping === "dpd" ? 2 : 3,
-        orderItems: items.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-      }
-
-      await createOrder(payload).unwrap()
-      dispatch(clearCart())
-      setCurrentStep(4)
-    } catch (error) {
-      console.error("Order submission failed:", error)
-      alert("Error placing the order. Please try again later.")
     }
-  }
+
+    const [updateUserAddress] = useUpdateUserAddressMutation()
+
+    const handlePlaceOrder = async () => {
+        const orderNum = `ORD-${Date.now()}`
+        setOrderNumber(orderNum)
+
+        try {
+            if (shippingData.saveAddress) {
+                await updateUserAddress({
+                    firstName: shippingData.firstName,
+                    lastName: shippingData.lastName,
+                    address: shippingData.streetAddress,
+                    apartmentNumber: shippingData.apartment,
+                    city: shippingData.city,
+                    postalCode: shippingData.zipCode,
+                    country: shippingData.country,
+                    phoneNumber: shippingData.phoneNumber,
+                })
+            }
+
+            const payload: CreateOrderDto = {
+                address: shippingData.streetAddress,
+                apartmentNumber: shippingData.apartment,
+                city: shippingData.city,
+                postalCode: shippingData.zipCode,
+                country: shippingData.country,
+                phoneNumber: shippingData.phoneNumber,
+                totalPrice: total,
+                status: "Pending",
+                deliveryServiceId: selectedShipping === "smartpost" ? 1 : selectedShipping === "dpd" ? 2 : 3,
+                orderItems: items.map((item) => ({
+                    productId: item.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+            }
+
+            await createOrder(payload).unwrap()
+            dispatch(clearCart())
+            setCurrentStep(4)
+        } catch (error) {
+            console.error("Order submission failed:", error)
+            alert("Error placing the order. Please try again later.")
+        }
+    }
 
   const subtotal = totalAmount
   const selectedShippingMethod = shippingMethods.find((method) => method.id === selectedShipping)

@@ -41,6 +41,25 @@ export const authApi = createApi({
             providesTags: ["User"],
         }),
 
+        updateUserAddress: builder.mutation<void, {
+            firstName: string
+            lastName: string
+            address: string
+            city: string
+            postalCode: string
+            country: string
+            phoneNumber: string
+            apartmentNumber: string
+        }>({
+            query: (data) => ({
+                url: "",
+                method: "PUT",
+                body: data,
+            }),
+            invalidatesTags: ["User"],
+        }),
+
+
         forgotPassword: builder.mutation<void, { email: string }>({
             query: (data) => ({
                 url: "request-reset",
@@ -58,4 +77,5 @@ export const {
     useLoginMutation,
     useGetCurrentUserQuery,
     useForgotPasswordMutation,
+    useUpdateUserAddressMutation,
 } = authApi
