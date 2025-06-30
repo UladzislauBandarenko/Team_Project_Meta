@@ -49,7 +49,7 @@ const ShopPage: React.FC = () => {
                         price: p.price,
                         rating: p.averageRating || 4.5,
                         reviews: p.reviewCount || 0,
-                        imageBase64: p.imageData,
+                        imageBase64: p.imageBase64,
                         category: p.categoryName ?? "",
                     }))
                 )
