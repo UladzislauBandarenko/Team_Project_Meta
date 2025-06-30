@@ -2,6 +2,39 @@
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
+interface AdminMetrics {
+    totalSales: number
+    platformProfit: number
+    averageOrderValue: number
+    charityDonations: number
+    totalUsers: number
+    totalOrders: number
+}
+
+interface Category {
+    id: number
+    name: string
+}
+
+interface User {
+    id: number
+    firstName: string
+    lastName: string
+    email: string
+    role: "buyer" | "seller" | "admin"
+    address: string
+    city: string
+    postalCode: string
+    country: string
+    phoneNumber: string
+    apartmentNumber: string
+}
+
+interface PromoteUserPayload {
+    userId: number
+    role: "buyer" | "seller" | "admin"
+}
+
 export const adminApi = createApi({
     reducerPath: "adminApi",
     baseQuery: fetchBaseQuery({
@@ -15,18 +48,11 @@ export const adminApi = createApi({
         },
     }),
     endpoints: (builder) => ({
-        getAdminMetrics: builder.query<{
-            totalSales: number
-            platformProfit: number
-            averageOrderValue: number
-            charityDonations: number
-            totalUsers: number
-            totalOrders: number
-        }, void>({
+        getAdminMetrics: builder.query<AdminMetrics, void>({
             query: () => "Admin/metrics",
         }),
 
-        getCategories: builder.query<{ id: number; name: string }[], void>({
+        getCategories: builder.query<Category[], void>({
             query: () => "Categories",
         }),
 
@@ -44,6 +70,18 @@ export const adminApi = createApi({
                 method: "DELETE",
             }),
         }),
+
+        getAllUsers: builder.query<User[], void>({
+            query: () => "Users",
+        }),
+
+        promoteUser: builder.mutation<void, PromoteUserPayload>({
+            query: (body) => ({
+                url: "Users/promote",
+                method: "POST",
+                body,
+            }),
+        }),
     }),
 })
 
@@ -52,4 +90,6 @@ export const {
     useGetCategoriesQuery,
     useAddCategoryMutation,
     useDeleteCategoryMutation,
+    useGetAllUsersQuery,
+    usePromoteUserMutation,
 } = adminApi
